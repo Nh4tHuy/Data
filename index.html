@@ -1,0 +1,817 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>KHO TÀI LIỆU TÀ ĐẠO - NH4THUY</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- React & ReactDOM -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    
+    <!-- Babel để dịch JSX trực tiếp trên trình duyệt -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0f172a; /* Slate 900 */
+            color: #f8fafc; /* Slate 50 */
+        }
+
+        #root:empty {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            background: #0f172a;
+            color: white;
+        }
+        #root:empty::after {
+            content: "Đang tải hệ thống tài liệu...";
+            font-size: 1.2rem;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse { 0% { opacity: 0.5; } 50% { opacity: 1; } 100% { opacity: 0.5; } }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-in {
+            animation: fadeIn 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+        }
+
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0f172a;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #334155;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #475569;
+        }
+        
+        .spinner {
+            border: 3px solid rgba(255,255,255,0.1);
+            border-left-color: #3b82f6;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+  
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxoaX3oe38O3ji4dAqB_uSAWpSebLmXV5pkX2ZRUYLI0cJpvr76aSwAxKU1pUhY5e5IGg/exec';
+
+        const { useState, useEffect } = React;
+
+        // --- CÁC BIỂU TƯỢNG (ICONS) ---
+        const Icon = ({ children, size = 24, className = "" }) => (
+            <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+                {children}
+            </svg>
+        );
+
+        const BookOpen = (p) => <Icon {...p}><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></Icon>;
+        const LogOut = (p) => <Icon {...p}><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></Icon>;
+        const Lock = (p) => <Icon {...p}><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></Icon>;
+        const FileText = (p) => <Icon {...p}><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><line x1="10" y1="9" x2="8" y2="9"/></Icon>;
+        const Calendar = (p) => <Icon {...p}><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></Icon>;
+        const Download = (p) => <Icon {...p}><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></Icon>;
+        const ShieldCheck = (p) => <Icon {...p}><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></Icon>;
+        const AlertCircle = (p) => <Icon {...p}><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></Icon>;
+        const Plus = (p) => <Icon {...p}><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></Icon>;
+        const LinkIcon = (p) => <Icon {...p}><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></Icon>;
+        const Trash2 = (p) => <Icon {...p}><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></Icon>;
+        const X = (p) => <Icon {...p}><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></Icon>;
+        const Check = (p) => <Icon {...p}><polyline points="20 6 9 17 4 12"/></Icon>;
+        const Star = (p) => <Icon {...p}><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></Icon>;
+        const Zap = (p) => <Icon {...p}><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></Icon>;
+        const Users = (p) => <Icon {...p}><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></Icon>;
+        const Globe = (p) => <Icon {...p}><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></Icon>;
+        const ChevronDown = (p) => <Icon {...p}><polyline points="6 9 12 15 18 9"/></Icon>;
+
+        // Dữ liệu mẫu khởi tạo
+        const INITIAL_FILES = [
+            { id: "1", name: 'TEST 1', note: 'Đáp án chi tiết.', link: 'https://example.com/1', date: '2024-05-20' },
+            { id: "2", name: 'TEST 2', note: 'Tổng hợp cấu trúc.', link: 'https://example.com/2', date: '2024-05-22' }
+        ];
+        const formatDisplayDate = (dateStr) => {
+    if (!dateStr) return '';
+    try {
+        const d = new Date(dateStr);
+        // Kiểm tra nếu parse thành công
+        if (!isNaN(d.getTime())) {
+            const day = d.getDate().toString().padStart(2, '0');
+            const month = (d.getMonth() + 1).toString().padStart(2, '0');
+            const year = d.getFullYear();
+            return `${day}/${month}/${year}`; // Trả về dạng DD/MM/YYYY
+        }
+        return String(dateStr);
+    } catch (e) {
+        return String(dateStr);
+    }
+};
+        // --- COMPONENT CHÍNH ---
+        function App() {
+            const [files, setFiles] = useState([]);
+            const [isLoading, setIsLoading] = useState(true);
+            const [isSaving, setIsSaving] = useState(false);
+            const [isAdmin, setIsAdmin] = useState(false);
+            const [currentView, setCurrentView] = useState('home');
+
+            // State Popup Đăng nhập
+            const [showLoginPopup, setShowLoginPopup] = useState(false);
+            const [adminKey, setAdminKey] = useState('');
+            const [loginError, setLoginError] = useState('');
+            
+            // State Thêm File
+            const [newFile, setNewFile] = useState({ name: '', note: '', link: '' });
+
+            // State cho FAQ Accordion
+            const [openFaq, setOpenFaq] = useState(null);
+
+            // Fetch Data
+            useEffect(() => {
+                fetchFilesData();
+            }, []);
+useEffect(() => {
+    const handleSpamClick = (e) => {
+        // Kiểm tra xem phần tử được click (hoặc cha của nó) có id="spam" không
+        if (e.target.closest('#spam')) {
+            e.preventDefault(); // Ngăn chặn hành động mặc định nếu là thẻ <a>
+            setShowSpamPopup(true);
+        }
+    };
+    document.addEventListener('click', handleSpamClick);
+    return () => document.removeEventListener('click', handleSpamClick);
+}, []);
+            const fetchFilesData = async () => {
+                setIsLoading(true);
+                if (SCRIPT_URL === 'THAY_URL_WEB_APP_CUA_BAN_VAO_DAY') {
+                    setFiles(INITIAL_FILES);
+                    setIsLoading(false);
+                    return;
+                }
+                try {
+                    const response = await fetch(SCRIPT_URL);
+                    const data = await response.json();
+                    if (data && data.success) {
+                        setFiles(data.files.reverse());
+                    }
+                } catch (error) {
+                    console.error("Lỗi khi tải dữ liệu:", error);
+                    setFiles(INITIAL_FILES);
+                } finally {
+                    setIsLoading(false);
+                }
+            };
+
+            const handlePopupLogin = (e) => {
+                e.preventDefault();
+                if (adminKey === 'nh4thuy') {
+                    setIsAdmin(true);
+                    setShowLoginPopup(false);
+                    setCurrentView('admin');
+                    setLoginError('');
+                    setAdminKey(''); 
+                } else {
+                    setLoginError('Key quản trị không chính xác - Hỏi Huy á!');
+                }
+            };
+
+            const handleLogout = () => {
+                setIsAdmin(false);
+                setCurrentView('home');
+            };
+
+            const handleAddFile = async (e) => {
+                e.preventDefault();
+                if (!newFile.name || !newFile.link) return;
+
+                const fileToAdd = {
+                    id: Date.now().toString(),
+                    name: newFile.name,
+                    note: newFile.note,
+                    link: newFile.link,
+                    date: new Date().toISOString().split('T')[0]
+                };
+
+                // Hiển thị file mới ngay lập tức trên màn hình
+                setFiles([fileToAdd, ...files]);
+                setNewFile({ name: '', note: '', link: '' });
+
+                if (SCRIPT_URL !== 'THAY_URL_WEB_APP_CUA_BAN_VAO_DAY') {
+                    setIsSaving(true);
+                    try {
+                        await fetch(SCRIPT_URL, {
+                            method: 'POST',
+                            mode: 'no-cors', // RẤT QUAN TRỌNG: Khắc phục lỗi CORS khi ghi data vào Google Sheets
+                            body: JSON.stringify({ action: 'add', file: fileToAdd }),
+                            headers: { 'Content-Type': 'text/plain;charset=utf-8' }
+                        });
+                    } catch (error) {
+                        console.error("Lỗi khi lưu file lên Sheet:", error);
+                    } finally {
+                        setIsSaving(false);
+                    }
+                }
+            };
+
+            const handleDeleteFile = async (id) => {
+                if (window.confirm('Bạn có chắc chắn muốn xóa tài liệu này không?')) {
+                    // Xóa file ngay trên giao diện
+                    setFiles(files.filter(file => file.id !== id));
+                    
+                    if (SCRIPT_URL !== 'THAY_URL_WEB_APP_CUA_BAN_VAO_DAY') {
+                        try {
+                            await fetch(SCRIPT_URL, {
+                                method: 'POST',
+                                mode: 'no-cors', // RẤT QUAN TRỌNG: Khắc phục lỗi CORS khi ghi data vào Google Sheets
+                                body: JSON.stringify({ action: 'delete', id: id }),
+                                headers: { 'Content-Type': 'text/plain;charset=utf-8' }
+                            });
+                        } catch (error) {
+                            console.error("Lỗi khi xoá File trên Sheet:", error);
+                        }
+                    }
+                }
+            };
+            const [showSpamPopup, setShowSpamPopup] = useState(false);
+            /* =========================================================================
+               CÁC HÀM RENDER COMPONENT
+               ========================================================================= */
+
+            const renderLoginPopup = () => {
+                if (!showLoginPopup) return null;
+
+                return (
+                    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/70 backdrop-blur-sm animate-fade-in p-4">
+                        <div className="bg-slate-800 border border-slate-700 p-8 rounded-2xl shadow-2xl w-full max-w-sm relative transform transition-all">
+                            <button 
+                                onClick={() => {
+                                    setShowLoginPopup(false);
+                                    setLoginError('');
+                                    setAdminKey('');
+                                }} 
+                                className="absolute top-4 right-4 text-slate-400 hover:text-white transition-colors p-1"
+                            >
+                                <X size={20} />
+                            </button>
+                            
+                            <div className="text-center mb-6">
+                                <div className="bg-blue-500/20 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 border border-blue-500/30">
+                                    <ShieldCheck size={32} className="text-blue-400" />
+                                </div>
+                                <h2 className="text-xl font-bold text-white">Xác Thực Quản Trị</h2>
+                                <p className="text-slate-400 text-sm mt-1">Nhập Key bảo mật để quản lý hệ thống</p>
+                            </div>
+
+                            <form onSubmit={handlePopupLogin}>
+                                {loginError && (
+                                    <div className="mb-4 bg-red-500/20 border border-red-500/50 text-red-200 text-sm p-3 rounded-lg flex items-center gap-2">
+                                        <AlertCircle size={16} />
+                                        <span>{loginError}</span>
+                                    </div>
+                                )}
+                                
+                                <input
+                                    type="password"
+                                    value={adminKey}
+                                    onChange={(e) => setAdminKey(e.target.value)}
+                                    placeholder="Nhập Key (VD: nh4thuy)"
+                                    className="w-full px-4 py-3 bg-slate-900 border border-slate-700 rounded-xl text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none mb-5 transition-all placeholder-slate-500"
+                                    autoFocus
+                                />
+                                
+                                <button 
+                                    type="submit" 
+                                    className="w-full py-3 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-bold transition-colors shadow-lg shadow-blue-500/20 flex items-center justify-center gap-2"
+                                >
+                                    <Lock size={18} />
+                                    Đăng Nhập
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                );
+            };
+const renderSpamPopup = () => {
+    if (!showSpamPopup) return null;
+
+    return (
+        <div className="fixed inset-0 z-[110] flex items-center justify-center bg-black/80 backdrop-blur-sm animate-fade-in p-4">
+            <div className="bg-slate-800 border-2 border-red-500 p-8 rounded-2xl shadow-[0_0_30px_rgba(239,68,68,0.3)] w-full max-w-sm relative transform transition-all text-center">
+                <button 
+                    onClick={() => setShowSpamPopup(false)} 
+                    className="absolute top-4 right-4 text-slate-400 hover:text-white transition-colors p-1"
+                >
+                    <X size={20} />
+                </button>
+                
+                <div className="bg-red-500/20 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4 border border-red-500/50">
+                    <AlertCircle size={40} className="text-red-500 animate-pulse" />
+                </div>
+                <h2 className="text-2xl font-bold text-red-500 mb-2">Error!</h2>
+                <p className="text-slate-300 text-lg">Không có cái gì ở đây hết<br/>Tất cả chỉ là lùa gà, nhấp vô làm gì?</p>
+                
+                <button 
+                    onClick={() => setShowSpamPopup(false)}
+                    className="mt-6 w-full py-3 bg-red-600 hover:bg-red-500 text-white rounded-xl font-bold transition-colors shadow-lg shadow-red-500/20"
+                >
+                    Né ra hộ
+                </button>
+            </div>
+        </div>
+    );
+};
+            const renderNavbar = () => (
+                <nav className="bg-slate-900/80 backdrop-blur-md border-b border-slate-800 text-white shadow-lg sticky top-0 z-40">
+                    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+                        <div 
+                            className="flex items-center space-x-3 cursor-pointer group"
+                            onClick={() => {
+                                setCurrentView('home');
+                                window.scrollTo({ top: 0, behavior: 'smooth' });
+                            }}
+                        >
+                            <div className="bg-blue-600/20 p-2 rounded-xl group-hover:bg-blue-600/40 transition-all border border-blue-500/30">
+                                <BookOpen size={24} className="text-blue-400" />
+                            </div>
+                            <span className="font-extrabold text-xl tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-white to-slate-300">
+                                KHO TÀI LIỆU TÀ ĐẠO
+                            </span>
+                        </div>
+                        
+                        <div className="flex items-center space-x-3">
+                            {isAdmin ? (
+                                <React.Fragment>
+                                    <button 
+                                        onClick={() => setCurrentView('admin')}
+                                        className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all ${currentView === 'admin' ? 'bg-blue-600 text-white shadow-md' : 'text-slate-300 hover:bg-slate-800 hover:text-white'}`}
+                                    >
+                                        Quản Lý
+                                    </button>
+                                    <button 
+                                        onClick={handleLogout}
+                                        className="flex items-center space-x-2 px-4 py-2 rounded-lg text-sm font-semibold bg-red-500/10 text-red-400 hover:bg-red-500 hover:text-white transition-all border border-red-500/20 hover:border-red-500"
+                                    >
+                                        <LogOut size={16} />
+                                        <span className="hidden sm:inline">Đăng xuất</span>
+                                    </button>
+                                </React.Fragment>
+                            ) : (
+                                <button 
+                                    onClick={() => setShowLoginPopup(true)}
+                                    className="flex items-center space-x-2 px-5 py-2 rounded-lg text-sm font-semibold bg-slate-800 hover:bg-slate-700 text-white transition-all border border-slate-700 shadow-sm hover:shadow-md transform hover:-translate-y-0.5"
+                                >
+                                    <Lock size={16} className="text-blue-400" />
+                                    <span>Quản Lý</span>
+                                </button>
+                            )}
+                        </div>
+                    </div>
+                </nav>
+            );
+
+            const renderHomeView = () => (
+                <div className="animate-fade-in">
+                    {/* HERO & FILE LIST SECTION */}
+                    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 pb-12">
+                        <div className="text-center mb-16 relative">
+                            <div className="inline-flex items-center justify-center px-4 py-1.5 mb-6 text-sm font-semibold text-blue-400 bg-blue-500/10 border border-blue-500/20 rounded-full">
+                                <span className="flex w-2 h-2 bg-blue-500 rounded-full mr-2 animate-pulse shadow-[0_0_8px_rgba(59,130,246,0.8)]"></span>
+                                Hệ thống lấy link tài liệu trực tuyến
+                            </div>
+                            <h1 className="text-4xl md:text-6xl font-extrabold text-white mb-6 tracking-tight leading-tight">
+                                Kho Tài Liệu
+                                <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-indigo-400"> Tà Đạo</span>
+                            </h1>
+                            <p className="text-lg md:text-xl text-slate-400 max-w-2xl mx-auto leading-relaxed mb-8">
+                                Khám phá và tải xuống hàng ngàn file tà đạo, giáo trình và tài liệu học tập được biên soạn độc quyền bởi các chuyên gia Huy lỏ....
+                            </p>
+                            <button 
+                                onClick={() => document.getElementById('file-list-section').scrollIntoView({ behavior: 'smooth' })}
+                                className="px-8 py-3.5 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl transition-all shadow-lg shadow-blue-500/20 transform hover:-translate-y-1"
+                            >
+                                Khám Phá Tài Liệu Ngay
+                            </button>
+                        </div>
+
+                        <div id="file-list-section" className="pt-8">
+                            {isLoading ? (
+                                <div className="flex flex-col items-center justify-center py-20 bg-slate-800/20 rounded-3xl border border-slate-800">
+                                    <div className="spinner mb-4"></div>
+                                    <p className="text-slate-400">Đang tải dữ liệu từ máy chủ...</p>
+                                </div>
+                            ) : files.length === 0 ? (
+                                <div className="text-center py-24 bg-slate-800/50 rounded-3xl border border-slate-700 backdrop-blur-sm">
+                                    <div className="bg-slate-900 w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-6 border border-slate-700">
+                                        <FileText size={40} className="text-slate-500" />
+                                    </div>
+                                    <h3 className="text-xl font-bold text-white mb-2">Chưa có tài liệu</h3>
+                                    <p className="text-slate-400">Các tài liệu tà đạo sẽ sớm được quản trị viên cập nhật tại đây.</p>
+                                </div>
+                            ) : (
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                                    {files.map(file => (
+                                        <div key={file.id} className="group bg-slate-800 rounded-2xl shadow-lg border border-slate-700 hover:border-blue-500/50 overflow-hidden hover:-translate-y-1 transition-all duration-300 flex flex-col h-full">
+                                            <div className="p-8 flex-grow">
+                                                <div className="flex items-start justify-between mb-6">
+                                                    <div className="p-3 bg-slate-900 text-blue-400 border border-slate-700 rounded-xl group-hover:bg-blue-600 group-hover:text-white group-hover:border-blue-500 transition-colors">
+                                                        <FileText size={24} />
+                                                    </div>
+                                                    <div className="flex items-center text-xs font-semibold text-slate-400 bg-slate-900 px-3 py-1.5 rounded-full border border-slate-700">
+                                                        <Calendar size={12} className="mr-1.5" />
+                                                        {formatDisplayDate(file.date)}
+                                                    </div>
+                                                </div>
+                                                <h3 className="text-xl font-bold text-white mb-3 line-clamp-2 leading-tight group-hover:text-blue-400 transition-colors" title={file.name}>
+                                                    {file.name}
+                                                </h3>
+                                                <p className="text-slate-400 line-clamp-3 leading-relaxed text-sm">
+                                                    {file.note || "Tài liệu này không có mô tả chi tiết."}
+                                                </p>
+                                            </div>
+                                            <div className="p-6 pt-0 mt-auto">
+                                                <a 
+                                                    href={file.link} 
+                                                    target="_blank" 
+                                                    rel="noopener noreferrer"
+                                                    className="flex items-center justify-center w-full py-3.5 px-4 bg-slate-900 hover:bg-blue-600 text-slate-300 hover:text-white border border-slate-700 hover:border-blue-500 rounded-xl transition-all duration-300 font-semibold group/btn"
+                                                >
+                                                    <Download size={18} className="mr-2 group-hover/btn:-translate-y-0.5 transition-transform" />
+                                                    <span>Tải Xuống Ngay</span>
+                                                </a>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                    </div>
+
+                    {/* TRUSTED BY SECTION */}
+                    <div className="py-16 border-y border-slate-800 bg-slate-900/50">
+                        <div className="max-w-7xl mx-auto px-4 text-center">
+                            <p className="text-sm font-semibold text-slate-400 mb-8 uppercase tracking-widest">Được phong bạc bởi các tổ chức giáo dục hàng đầu</p>
+                            <div className="flex flex-wrap justify-center items-center gap-12 opacity-50 grayscale hover:grayscale-0 transition-all duration-500">
+                                <div className="text-2xl font-black text-white flex items-center gap-2"><Globe size={28}/> EduCore</div>
+                                <div className="text-2xl font-black text-white flex items-center gap-2"><BookOpen size={28}/> VNU-HCM</div>
+                                <div className="text-2xl font-black text-white flex items-center gap-2"><Users size={28}/> Global Tutors</div>
+                                <div className="text-2xl font-black text-white flex items-center gap-2"><Zap size={28}/> FastLearn</div>
+                                <div className="text-2xl font-black text-white flex items-center gap-2"><ShieldCheck size={28}/> SafeExam</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* FEATURES SECTION */}
+                    <div className="py-24 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                        <div className="text-center mb-16">
+                            <h2 className="text-3xl md:text-4xl font-extrabold text-white mb-4">Tính năng không nổi bật</h2>
+                            <p className="text-slate-400 max-w-2xl mx-auto">Hệ thống được thiết kế không tối ưu, mang lại trải nghiệm tra cứu và tải tài liệu tà đạo hoàn tệ nhất từ trước đến giờ chưa có cái website nào như này cả.</p>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
+                            {[
+                                { icon: <Zap size={32} />, title: 'Tốc độ siêu tốc', desc: 'Hạ tầng máy chủ mạnh rất chậm, tải xuống tài liệu tà đạo rất lâu mà không cần chờ đợi.' },
+                                { icon: <ShieldCheck size={32} />, title: 'Bảo mật tuyệt đối', desc: 'Các tập tin chưa được quét virus định kỳ, đảm bảo chưa an toàn tuyệt đối cho thiết bị của bạn.' },
+                                { icon: <Globe size={32} />, title: 'Truy cập mọi nơi', desc: 'Giao diện chả tương thích hoàn hảo với mọi thiết bị từ điện thoại đến máy tính.' },
+                            ].map((feature, i) => (
+                                <div key={i} className="bg-slate-800 p-8 rounded-2xl border border-slate-700 hover:border-blue-500/50 transition-colors group">
+                                    <div className="w-16 h-16 bg-blue-500/10 rounded-xl flex items-center justify-center text-blue-400 mb-6 group-hover:scale-110 transition-transform">
+                                        {feature.icon}
+                                    </div>
+                                    <h3 className="text-xl font-bold text-white mb-3">{feature.title}</h3>
+                                    <p className="text-slate-400 leading-relaxed">{feature.desc}</p>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* TESTIMONIALS SECTION */}
+                    <div className="py-24 bg-slate-900/50 border-y border-slate-800">
+                        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                            <div className="text-center mb-16">
+                                <h2 className="text-3xl md:text-4xl font-extrabold text-white mb-4">Cộng đồng đã nói gì về website?</h2>
+                                <p className="text-slate-400 max-w-2xl mx-auto">Hàng trăm ngàn học viên và giáo viên đã không cải thiện chất lượng học tập do không tải tài liệu tà đạo trên hệ thống.</p>
+                            </div>
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                                {[
+                                    { name: 'Nguyễn Văn A', role: 'Học sinh lớp 36', text: 'Nhờ có bộ đề thi thử Toán ở đây mà điểm thi thử của em đã tăng từ 3 lên 6. Tài liệu thực sự rất chất lượng và sát đề gốc!' },
+                                    { name: 'Trần Thị B', role: 'Giáo viên', text: 'Tôi thường xuyên không tải tài liệu tà đạo từ website để làm giáo án giảng dạy. Vì cấu trúc bài rất không logic và khó hiểu.' },
+                                    { name: 'Lê Minh C', role: 'Sinh viên ĐH Bách Khoa', text: 'Giao diện trang web cực kỳ xấu, tốc độ tải file tà đạo chậm và có quảng cáo khó chịu. Đây là kho tài liệu tệ nhất mình từng dùng.' }
+                                ].map((review, i) => (
+                                    <div key={i} className="bg-slate-800 p-8 rounded-2xl border border-slate-700 relative">
+                                        <div className="flex gap-1 text-yellow-400 mb-4">
+                                            {[...Array(5)].map((_, idx) => <Star key={idx} size={18} fill="currentColor" />)}
+                                        </div>
+                                        <p className="text-slate-300 italic mb-6 leading-relaxed">"{review.text}"</p>
+                                        <div className="flex items-center gap-4">
+                                            <div className="w-12 h-12 bg-slate-700 rounded-full flex items-center justify-center text-xl font-bold text-slate-300 border border-slate-600">
+                                                {review.name.charAt(0)}
+                                            </div>
+                                            <div>
+                                                <h4 className="font-bold text-white">{review.name}</h4>
+                                                <p className="text-sm text-slate-400">{review.role}</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* PRICING SECTION */}
+                    <div className="py-24 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                        <div className="text-center mb-16">
+                            <h2 className="text-3xl md:text-4xl font-extrabold text-white mb-4">Gói cước phù hợp mọi nhu cầu</h2>
+                            <p className="text-slate-400 max-w-2xl mx-auto">Đăng ký ngay hôm nay để nhận được đầy đủ đặc quyền tài liệu tà đạo của Nh4tHuy.</p>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+                            {[
+                                { name: 'Miễn Phí', price: '0đ', desc: 'Cho học sinh cá nhân', features: ['Truy cập kho tài liệu cơ bản', 'Tải tối đa 1 file/ngày', 'Không hỗ trợ gì thêm', 'Dễ dính file virus'] },
+                                { name: 'Nâng Cao', price: '99k', period: '/tháng', desc: 'Dành cho người luyện thi', featured: true, features: ['Truy cập TOÀN BỘ kho tài liệu', 'Không giới hạn số lượt tải', 'Tài liệu độc quyền có đáp án', 'Hỗ trợ ưu tiên 24/7'] },
+                                { name: 'Vô hạn', price: '199k', period: '/tháng', desc: 'Dành cho trường học/trung tâm', features: ['Mọi quyền lợi của gói Pro', 'Tải giáo án có thể chỉnh sửa', 'Cấp tài Admin web này'] }
+                            ].map((plan, i) => (
+                                <div key={i} className={`bg-slate-800 rounded-3xl border ${plan.featured ? 'border-blue-500 shadow-[0_0_30px_rgba(59,130,246,0.2)] transform md:-translate-y-4' : 'border-slate-700'} p-8 flex flex-col`}>
+                                    {plan.featured && <div className="bg-blue-600 text-white text-xs font-bold uppercase tracking-wider py-1 px-3 rounded-full self-start mb-4">Khuyên dùng</div>}
+                                    <h3 className="text-xl font-bold text-white">{plan.name}</h3>
+                                    <p className="text-slate-400 text-sm mt-2">{plan.desc}</p>
+                                    <div className="my-6">
+                                        <span className="text-4xl font-extrabold text-white">{plan.price}</span>
+                                        {plan.period && <span className="text-slate-400 font-medium">{plan.period}</span>}
+                                    </div>
+                                    <ul className="space-y-4 mb-8 flex-grow">
+                                        {plan.features.map((feat, idx) => (
+                                            <li key={idx} className="flex items-start text-slate-300">
+                                                <Check size={20} className="text-blue-400 mr-3 flex-shrink-0 mt-0.5" />
+                                                <span>{feat}</span>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                    <button id="spam" className={`w-full py-3.5 rounded-xl font-bold transition-all ${plan.featured ? 'bg-blue-600 hover:bg-blue-500 text-white shadow-lg' : 'bg-slate-700 hover:bg-slate-600 text-white'}`}>
+                                        Đăng ký ngay
+                                    </button>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* FAQ SECTION */}
+                    <div className="py-24 bg-slate-900/50 border-t border-slate-800">
+                        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+                            <div className="text-center mb-12">
+                                <h2 className="text-3xl md:text-4xl font-extrabold text-white mb-4">Câu hỏi ít hay gặp</h2>
+                            </div>
+                            <div className="space-y-4">
+                                {[
+                                    { q: 'Làm thế nào để tải File tà đạo?', a: 'Rất khó hiểu! Chỉ cần không nhấn vào nút "Tải Xuống Ngay" ở dưới mỗi tài liệu. Trình duyệt sẽ không tự động điều hướng bạn tới trang tải về.' },
+                                    { q: 'Các tài liệu ở đây có cập nhật theo chương trình mới không?', a: 'Không. Website của tui thì toàn quyền là của tui mắc gì hỏi.' },
+                                    { q: 'Tôi có thể chia sẻ tài liệu cho bạn bè được không?', a: 'Được á, chia sẻ đi rồi bị dính file virus tui không chịu trách nhiệm.' },
+                                    { q: 'Hệ thống có hỗ trợ xem tài liệu trên điện thoại/máy tính không?', a: 'Không á, đang dùng thiết bị gì để coi mà hỏi quài vậy.' }
+                                ].map((faq, i) => (
+                                    <div key={i} className="bg-slate-800 border border-slate-700 rounded-2xl overflow-hidden">
+                                        <button 
+                                            className="w-full px-6 py-5 text-left flex justify-between items-center focus:outline-none hover:bg-slate-700/50 transition-colors"
+                                            onClick={() => setOpenFaq(openFaq === i ? null : i)}
+                                        >
+                                            <span className="font-bold text-white text-lg">{faq.q}</span>
+                                            <ChevronDown size={20} className={`text-slate-400 transition-transform ${openFaq === i ? 'rotate-180' : ''}`} />
+                                        </button>
+                                        <div className={`px-6 overflow-hidden transition-all duration-300 ${openFaq === i ? 'max-h-48 pb-5' : 'max-h-0'}`}>
+                                            <p className="text-slate-400 leading-relaxed">{faq.a}</p>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* FOOTER */}
+                    <footer className="bg-[#0b1121] py-12 border-t border-slate-800">
+                        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                            <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
+                                <div className="md:col-span-2">
+                                    <div className="flex items-center space-x-2 mb-4">
+                                        <BookOpen size={24} className="text-blue-500" />
+                                        <span className="font-extrabold text-xl text-white">KHO TÀI LIỆU TÀ ĐẠO</span>
+                                    </div>
+                                    <p className="text-slate-400 text-sm max-w-sm leading-relaxed">Nền tảng chia sẻ tài liệu TÀ ĐẠO trực tuyến ít nhất và được xếp loại website phong bạc hàng đầu Việt Nam.</p>
+                                </div>
+                                <div>
+                                    <h4 className="font-bold text-white mb-4">Liên kết hữu ích</h4>
+                                    <ul className="space-y-2 text-sm text-slate-400">
+                                        <li><a id="spam" href="#" className="hover:text-blue-400 transition-colors">Giới thiệu</a></li>
+                                        <li><a id="spam" href="#" className="hover:text-blue-400 transition-colors">Kho tài liệu</a></li>
+                                        <li><a id="spam" href="#" className="hover:text-blue-400 transition-colors">Đăng ký thành viên</a></li>
+                                        <li><a id="spam" href="#" className="hover:text-blue-400 transition-colors">Nhận Free 20k</a></li>
+                                    </ul>
+                                </div>
+                                <div>
+                                    <h4 className="font-bold text-white mb-4">Hỗ trợ khách hàng</h4>
+                                    <ul className="space-y-2 text-sm text-slate-400">
+                                        <li><a id="spam" href="#" className="hover:text-blue-400 transition-colors">Điều khoản dịch vụ</a></li>
+                                        <li><a id="spam" href="#" className="hover:text-blue-400 transition-colors">Chính sách bảo mật</a></li>
+                                        <li><a id="spam" href="#" className="hover:text-blue-400 transition-colors">Nhận Free 100k</a></li>
+                                        <li><a id="spam" href="#" className="hover:text-blue-400 transition-colors">Liên hệ báo lỗi</a></li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <div className="border-t border-slate-800 pt-8 flex flex-col md:flex-row items-center justify-between text-sm text-slate-500">
+                                <p>© 2026 KHO TÀI LIỆU TÀ ĐẠO - COPYRIGHT NH4THUY</p>
+                                <div className="flex space-x-4 mt-4 md:mt-0">
+                                    <a id="spam" href="#" className="hover:text-white transition-colors">Facebook</a>
+                                    <a id="spam" href="#" className="hover:text-white transition-colors">Youtube</a>
+                                    <a id="spam" href="#" className="hover:text-white transition-colors">Tiktok</a>
+                                </div>
+                            </div>
+                        </div>
+                    </footer>
+                </div>
+            );
+
+            const renderAdminView = () => {
+                if (!isAdmin) {
+                    setCurrentView('home');
+                    setShowLoginPopup(true);
+                    return null;
+                }
+
+                return (
+                    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 animate-fade-in">
+                        <div className="mb-8 border-b border-slate-800 pb-5">
+                            <h1 className="text-3xl font-extrabold text-white tracking-tight">Bảng Điều Khiển Admin</h1>
+                            <p className="text-slate-400 mt-2 text-lg flex items-center gap-2">
+                                Thêm mới, quản lý và xóa các File lưu trữ trên hệ thống.
+                                {SCRIPT_URL === 'THAY_URL_WEB_APP_CUA_BAN_VAO_DAY' && (
+                                    <span className="text-xs bg-yellow-500/20 text-yellow-400 px-2 py-1 rounded-md border border-yellow-500/30">Đang chạy Demo (Chưa kết nối API)</span>
+                                )}
+                            </p>
+                        </div>
+
+                        <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
+                            <div className="xl:col-span-1">
+                                <div className="bg-slate-800 rounded-2xl shadow-lg border border-slate-700 overflow-hidden sticky top-24">
+                                    <div className="bg-slate-900/50 p-6 border-b border-slate-700">
+                                        <h2 className="text-lg font-bold text-white flex items-center justify-between">
+                                            <div className="flex items-center">
+                                                <div className="bg-blue-500/20 border border-blue-500/30 p-1.5 rounded-lg mr-3">
+                                                    <Plus size={18} className="text-blue-400" />
+                                                </div>
+                                                Thêm File Mới Bằng Link
+                                            </div>
+                                            {isSaving && <div className="spinner w-5 h-5"></div>}
+                                        </h2>
+                                    </div>
+                                    
+                                    <form onSubmit={handleAddFile} className="p-6 space-y-5">
+                                        <div>
+                                            <label className="block text-sm font-bold text-slate-300 mb-2">Tên File hiển thị <span className="text-red-400">*</span></label>
+                                            <input 
+                                                type="text" 
+                                                value={newFile.name}
+                                                onChange={(e) => setNewFile({...newFile, name: e.target.value})}
+                                                className="w-full px-4 py-2.5 bg-slate-900 border border-slate-700 text-white rounded-xl focus:bg-slate-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all placeholder-slate-600"
+                                                placeholder="VD: Đáp án bài tập..."
+                                                required
+                                            />
+                                        </div>
+                                        
+                                        <div>
+                                            <label className="block text-sm font-bold text-slate-300 mb-2">Link Tải Về (Drive, Dropbox...) <span className="text-red-400">*</span></label>
+                                            <div className="relative">
+                                                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                                                    <LinkIcon size={16} className="text-slate-500" />
+                                                </div>
+                                                <input 
+                                                    type="url" 
+                                                    value={newFile.link}
+                                                    onChange={(e) => setNewFile({...newFile, link: e.target.value})}
+                                                    className="w-full pl-10 pr-4 py-2.5 bg-slate-900 border border-slate-700 text-white rounded-xl focus:bg-slate-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all placeholder-slate-600"
+                                                    placeholder="https://......."
+                                                    required
+                                                />
+                                            </div>
+                                        </div>
+
+                                        <div>
+                                            <label className="block text-sm font-bold text-slate-300 mb-2">Ghi chú File</label>
+                                            <textarea 
+                                                value={newFile.note}
+                                                onChange={(e) => setNewFile({...newFile, note: e.target.value})}
+                                                rows="3"
+                                                className="w-full px-4 py-3 bg-slate-900 border border-slate-700 text-white rounded-xl focus:bg-slate-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none resize-none transition-all placeholder-slate-600"
+                                                placeholder="Nhập ghi chú chi tiết về nội dung File..."
+                                            ></textarea>
+                                        </div>
+                                        
+                                        <button 
+                                            type="submit"
+                                            disabled={isSaving}
+                                            className={`w-full py-3 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl transition-colors flex items-center justify-center space-x-2 shadow-lg shadow-blue-500/20 ${isSaving ? 'opacity-70 cursor-not-allowed' : ''}`}
+                                        >
+                                            <Plus size={18} />
+                                            <span>{isSaving ? 'Đang Xử Lý...' : 'Thêm Vào Hệ Thống'}</span>
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+
+                            <div className="xl:col-span-2">
+                                <div className="bg-slate-800 rounded-2xl shadow-lg border border-slate-700 overflow-hidden">
+                                    <div className="p-6 border-b border-slate-700 flex justify-between items-center bg-slate-900/50">
+                                        <h2 className="text-lg font-bold text-white flex items-center">
+                                            Danh Sách Quản Lý 
+                                            <span className="ml-3 px-3 py-1 bg-slate-900 border border-slate-700 text-blue-400 text-sm rounded-full">{files.length} file</span>
+                                        </h2>
+                                    </div>
+                                    
+                                    {isLoading ? (
+                                        <div className="flex flex-col items-center justify-center py-20">
+                                            <div className="spinner mb-4"></div>
+                                            <p className="text-slate-400">Đang tải dữ liệu...</p>
+                                        </div>
+                                    ) : files.length === 0 ? (
+                                        <div className="p-12 text-center">
+                                            <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-slate-900 border border-slate-700 mb-4">
+                                                <BookOpen size={28} className="text-slate-600" />
+                                            </div>
+                                            <p className="text-slate-400 font-medium text-lg">Hệ thống chưa có tài liệu nào.</p>
+                                        </div>
+                                    ) : (
+                                        <ul className="divide-y divide-slate-700/50">
+                                            {files.map(file => (
+                                                <li key={file.id} className="p-6 hover:bg-slate-700/30 transition-colors flex flex-col sm:flex-row sm:items-start justify-between gap-6 group">
+                                                    <div className="flex-1 overflow-hidden">
+                                                        <h3 className="font-extrabold text-white text-lg group-hover:text-blue-400 transition-colors flex items-center gap-2 flex-wrap">
+                                                            {file.name}
+                                                        </h3>
+                                                        <p className="text-slate-400 mt-2 line-clamp-2 leading-relaxed">{file.note}</p>
+                                                        <div className="flex items-center space-x-6 mt-4">
+                                                            <span className="flex items-center text-sm font-medium text-slate-500">
+                                                                <Calendar size={14} className="mr-1.5" />
+                                                               {formatDisplayDate(file.date)}
+                                                            </span>
+                                                            <a href={file.link} target="_blank" rel="noopener noreferrer" className="flex items-center text-sm font-bold text-blue-400 hover:text-blue-300 hover:underline truncate">
+                                                                <LinkIcon size={14} className="mr-1.5 flex-shrink-0" /> Mở liên kết tải
+                                                            </a>
+                                                        </div>
+                                                    </div>
+                                                    
+                                                    <div className="flex items-center sm:mt-0 mt-2 flex-shrink-0">
+                                                        <button 
+                                                            onClick={() => handleDeleteFile(file.id)}
+                                                            className="flex items-center px-3 py-2 text-sm font-semibold text-red-400 hover:text-red-300 bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 hover:border-red-500/50 rounded-lg transition-all"
+                                                            title="Xóa tài liệu này"
+                                                        >
+                                                            <Trash2 size={16} className="mr-2" />
+                                                            Xóa
+                                                        </button>
+                                                    </div>
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                );
+            };
+
+            return (
+                <div className="min-h-screen selection:bg-blue-500/30 relative flex flex-col">
+                    {renderNavbar()}
+                    <main className="flex-grow">
+                        {currentView === 'home' && renderHomeView()}
+                        {currentView === 'admin' && renderAdminView()}
+                    </main>
+                    {renderLoginPopup()}
+                    {renderSpamPopup()}
+                </div>
+            );
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
