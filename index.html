@@ -250,27 +250,37 @@
                 }
             };
 
-            const handleLogin = async (e) => {
-                e.preventDefault();
-                setLoading(true);
-                const username = e.target.username.value.trim();
-                const password = e.target.password.value; 
+           const handleLogin = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    const username = e.target.username.value.trim();
+    const password = e.target.password.value;
+    
+    try {
+        let res = await callApi('login', { username, password });
+        
+        // --- THUẬT TOÁN FIX LỖI MẤT SỐ 0 TRÊN GOOGLE SHEETS ---
+        // Nếu đăng nhập thất bại, mật khẩu là số và bắt đầu bằng số 0
+        if (!res.success && !isNaN(password) && password.startsWith('0')) {
+            // Tự động bỏ số 0 ở đầu để khớp với dữ liệu bị Google Sheet bóp méo
+            const fallbackPassword = Number(password).toString(); 
+            res = await callApi('login', { username, password: fallbackPassword });
+        }
+        // ------------------------------------------------------
 
-                try {
-                    const res = await callApi('login', { username, password });
-                    if (res.success) {
-                        localStorage.setItem('saas_user', JSON.stringify(res.data));
-                        setUser(res.data);
-                        setView('landing');
-                        notify("Đăng nhập thành công!");
-                    } else {
-                        notify(res.message || "Sai tài khoản hoặc mật khẩu", "error");
-                    }
-                } catch (e) {
-                    notify("Lỗi kết nối máy chủ. Hãy kiểm tra lại URL Apps Script.", "error");
-                }
-                setLoading(false);
-            };
+        if (res.success) {
+            localStorage.setItem('saas_user', JSON.stringify(res.data));
+            setUser(res.data);
+            setView('landing');
+            notify("Đăng nhập thành công! Chào mừng trở lại.");
+        } else {
+            notify(res.message || "Sai tài khoản hoặc mật khẩu", "error");
+        }
+    } catch (e) { 
+        notify("Lỗi kết nối máy chủ. Hãy kiểm tra lại URL Apps Script.", "error"); 
+    }
+    setLoading(false);
+};
 
             const handleRegister = async (e) => {
                 e.preventDefault();
@@ -858,7 +868,7 @@
                                     <Icon name={view === 'login' ? "fa-solid fa-shield-halved" : "fa-solid fa-user-plus"} className="text-3xl text-blue-400" />
                                 </div>
                                 <h2 className="text-3xl font-bold mb-2">{view === 'login' ? 'Đăng nhập hệ thống' : 'Tạo tài khoản mới'}</h2>
-                                <p className="text-slate-400">{view === 'login' ? 'Đăng nhập để tải File lên' : 'Tham gia cộng đồng lùa gà ngay hôm nay'}</p>
+                                <p className="text-slate-400">{view === 'login' ? 'Đăng nhập để tải File lên' : 'Tham gia cộng đồng lùa gà này'}</p>
                             </div>
 
                             <form onSubmit={view === 'login' ? handleLogin : handleRegister} className="flex flex-col gap-6">
