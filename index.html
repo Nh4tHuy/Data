@@ -1,817 +1,1497 @@
 <!DOCTYPE html>
 <html lang="vi">
+
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>KHO TÀI LIỆU TÀ ĐẠO - NH4THUY</title>
-    
-    <!-- Tailwind CSS -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kho Tài Liệu Tà Đạo - Nh4tHuy</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    
-    <!-- React & ReactDOM -->
-    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-    
-    <!-- Babel để dịch JSX trực tiếp trên trình duyệt -->
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://unpkg.com/framer-motion@10.16.4/dist/framer-motion.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap');
+
         body {
-            font-family: 'Inter', sans-serif;
-            background-color: #0f172a; /* Slate 900 */
-            color: #f8fafc; /* Slate 50 */
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background: #0f172a;
+            color: #f8fafc;
         }
 
-        #root:empty {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
-            background: #0f172a;
+        .glass {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .gradient-text {
+            background: linear-gradient(135deg, #60a5fa, #c084fc);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .sidebar-active {
+            background: rgba(59, 130, 246, 0.1);
+            border-right: 3px solid #3b82f6;
+            color: #3b82f6;
+        }
+
+        input,
+        select,
+        textarea {
+            background: rgba(15, 23, 42, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.1);
             color: white;
-        }
-        #root:empty::after {
-            content: "Đang tải hệ thống tài liệu...";
-            font-size: 1.2rem;
-            animation: pulse 1.5s infinite;
-        }
-
-        @keyframes pulse { 0% { opacity: 0.5; } 50% { opacity: 1; } 100% { opacity: 0.5; } }
-        
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        .animate-fade-in {
-            animation: fadeIn 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+            padding: 1.25rem;
+            border-radius: 1rem;
+            outline: none;
+            transition: all 0.2s;
+            font-size: 1.1rem;
+            width: 100%;
         }
 
-        ::-webkit-scrollbar {
-            width: 8px;
+        input:focus,
+        textarea:focus {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.15);
+            background: rgba(15, 23, 42, 0.95);
         }
-        ::-webkit-scrollbar-track {
-            background: #0f172a;
+
+        .btn-primary {
+            background: linear-gradient(16deg, #001d4b, rgb(123 162 225 / 80%));
+            transition: all 0.3s;
+            cursor: pointer;
         }
-        ::-webkit-scrollbar-thumb {
-            background: #334155;
-            border-radius: 4px;
+
+        .btn-primary:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
         }
-        ::-webkit-scrollbar-thumb:hover {
-            background: #475569;
-        }
-        
-        .spinner {
-            border: 3px solid rgba(255,255,255,0.1);
-            border-left-color: #3b82f6;
+
+        .loader {
+            border: 3px solid rgba(255, 255, 255, 0.1);
+            border-top: 3px solid #3b82f6;
             border-radius: 50%;
             width: 24px;
             height: 24px;
             animation: spin 1s linear infinite;
         }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
     </style>
 </head>
+
 <body>
     <div id="root"></div>
 
+    <script>
+        window.onerror = function (message, source, lineno, colno, error) {
+            console.error("Global Error Caught:", { message, source, lineno, colno, error });
+            return false;
+        };
+    </script>
     <script type="text/babel">
-  
-        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxoaX3oe38O3ji4dAqB_uSAWpSebLmXV5pkX2ZRUYLI0cJpvr76aSwAxKU1pUhY5e5IGg/exec';
+        const { useState, useEffect, useMemo } = React;
+        const { motion, AnimatePresence } = window.Motion;
 
-        const { useState, useEffect } = React;
+        // --- CONFIGURATION ---
+        const API_URL = "https://script.google.com/macros/s/AKfycbzYnAIe5aieIw8EYdLUKGdC0heRJYm9z6AnOf4oR5SqUkOBFMAyqSUYHoh3b-N3ToC4xQ/exec";
 
-        // --- CÁC BIỂU TƯỢNG (ICONS) ---
-        const Icon = ({ children, size = 24, className = "" }) => (
-            <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
-                {children}
-            </svg>
+        // --- COMPONENTS ---
+
+        const Icon = ({ name, className = "" }) => <i className={`${name} ${className}`}></i>;
+
+        const LoadingOverlay = () => (
+            <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[9999] flex items-center justify-center">
+                <div className="bg-slate-800 p-6 rounded-2xl flex flex-col items-center gap-4 shadow-2xl border border-white/10">
+                    <div className="loader"></div>
+                    <p className="text-sm font-medium">Đang xử lý, đồng bộ dữ liệu...</p>
+                </div>
+            </div>
         );
 
-        const BookOpen = (p) => <Icon {...p}><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></Icon>;
-        const LogOut = (p) => <Icon {...p}><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></Icon>;
-        const Lock = (p) => <Icon {...p}><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></Icon>;
-        const FileText = (p) => <Icon {...p}><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><line x1="10" y1="9" x2="8" y2="9"/></Icon>;
-        const Calendar = (p) => <Icon {...p}><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></Icon>;
-        const Download = (p) => <Icon {...p}><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></Icon>;
-        const ShieldCheck = (p) => <Icon {...p}><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></Icon>;
-        const AlertCircle = (p) => <Icon {...p}><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></Icon>;
-        const Plus = (p) => <Icon {...p}><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></Icon>;
-        const LinkIcon = (p) => <Icon {...p}><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></Icon>;
-        const Trash2 = (p) => <Icon {...p}><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></Icon>;
-        const X = (p) => <Icon {...p}><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></Icon>;
-        const Check = (p) => <Icon {...p}><polyline points="20 6 9 17 4 12"/></Icon>;
-        const Star = (p) => <Icon {...p}><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></Icon>;
-        const Zap = (p) => <Icon {...p}><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></Icon>;
-        const Users = (p) => <Icon {...p}><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></Icon>;
-        const Globe = (p) => <Icon {...p}><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></Icon>;
-        const ChevronDown = (p) => <Icon {...p}><polyline points="6 9 12 15 18 9"/></Icon>;
+        const Modal = ({ isOpen, onClose, title, children }) => {
+            if (!isOpen) return null;
+            return (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+                    <motion.div
+                        initial={{ opacity: 0, scale: 0.95 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        className="bg-slate-800 w-full max-w-lg rounded-2xl border border-white/10 shadow-2xl overflow-hidden"
+                    >
+                        <div className="p-4 border-b border-white/5 flex justify-between items-center bg-slate-800/50">
+                            <h3 className="font-bold text-lg">{title}</h3>
+                            <button onClick={onClose} className="p-2 hover:bg-white/5 rounded-lg transition-colors"><Icon name="fa-solid fa-xmark" /></button>
+                        </div>
+                        <div className="p-6">{children}</div>
+                    </motion.div>
+                </div>
+            );
+        };
 
-        // Dữ liệu mẫu khởi tạo
-        const INITIAL_FILES = [
-            { id: "1", name: 'TEST 1', note: 'Đáp án chi tiết.', link: 'https://example.com/1', date: '2024-05-20' },
-            { id: "2", name: 'TEST 2', note: 'Tổng hợp cấu trúc.', link: 'https://example.com/2', date: '2024-05-22' }
-        ];
-        const formatDisplayDate = (dateStr) => {
-    if (!dateStr) return '';
-    try {
-        const d = new Date(dateStr);
-        // Kiểm tra nếu parse thành công
-        if (!isNaN(d.getTime())) {
-            const day = d.getDate().toString().padStart(2, '0');
-            const month = (d.getMonth() + 1).toString().padStart(2, '0');
-            const year = d.getFullYear();
-            return `${day}/${month}/${year}`; // Trả về dạng DD/MM/YYYY
-        }
-        return String(dateStr);
-    } catch (e) {
-        return String(dateStr);
-    }
-};
-        // --- COMPONENT CHÍNH ---
-        function App() {
+        const App = () => {
+            const [user, setUser] = useState(JSON.parse(localStorage.getItem('saas_user')) || null);
+            const [view, setView] = useState('landing'); 
+            const [loading, setLoading] = useState(false);
             const [files, setFiles] = useState([]);
-            const [isLoading, setIsLoading] = useState(true);
-            const [isSaving, setIsSaving] = useState(false);
-            const [isAdmin, setIsAdmin] = useState(false);
-            const [currentView, setCurrentView] = useState('home');
-
-            // State Popup Đăng nhập
-            const [showLoginPopup, setShowLoginPopup] = useState(false);
-            const [adminKey, setAdminKey] = useState('');
-            const [loginError, setLoginError] = useState('');
-            
-            // State Thêm File
-            const [newFile, setNewFile] = useState({ name: '', note: '', link: '' });
-
-            // State cho FAQ Accordion
+            const [users, setUsers] = useState([]);
+            const [settings, setSettings] = useState({});
+            const [adminTab, setAdminTab] = useState('files'); 
+            const [editingFile, setEditingFile] = useState(null);
+            const [searchQuery, setSearchQuery] = useState('');
+            const [showAnnouncement, setShowAnnouncement] = useState(false);
             const [openFaq, setOpenFaq] = useState(null);
+            const [faqs, setFaqs] = useState([]);
+            const [editingFaq, setEditingFaq] = useState(null);
+            const [showSpamPopup, setShowSpamPopup] = useState(false);
 
-            // Fetch Data
+            // Notification state
+            const [notification, setNotification] = useState({ show: false, message: '', type: 'success' });
+            const [downloadModal, setDownloadModal] = useState({ isOpen: false, file: null, key: '' });
+            const [keyError, setKeyError] = useState(false);
+            const notify = (message, type = 'success') => {
+                setNotification({ show: true, message, type });
+                setTimeout(() => setNotification({ ...notification, show: false }), 4000);
+            };
+
             useEffect(() => {
-                fetchFilesData();
-            }, []);
-useEffect(() => {
-    const handleSpamClick = (e) => {
-        // Kiểm tra xem phần tử được click (hoặc cha của nó) có id="spam" không
-        if (e.target.closest('#spam')) {
-            e.preventDefault(); // Ngăn chặn hành động mặc định nếu là thẻ <a>
-            setShowSpamPopup(true);
-        }
-    };
-    document.addEventListener('click', handleSpamClick);
-    return () => document.removeEventListener('click', handleSpamClick);
-}, []);
-            const fetchFilesData = async () => {
-                setIsLoading(true);
-                if (SCRIPT_URL === 'THAY_URL_WEB_APP_CUA_BAN_VAO_DAY') {
-                    setFiles(INITIAL_FILES);
-                    setIsLoading(false);
-                    return;
+                checkAnnouncement();
+                if (user) {
+                    fetchData();
+                } else {
+                    fetchPublicData();
                 }
+            }, [user]);
+            useEffect(() => {
+                const handleSpamClick = (e) => {
+                    if (e.target.closest('#spam')) {
+                        e.preventDefault();
+                        setShowSpamPopup(true);
+                    }
+                };
+                document.addEventListener('click', handleSpamClick);
+                return () => document.removeEventListener('click', handleSpamClick);
+            }, []);
+            const fetchPublicData = async () => {
                 try {
-                    const response = await fetch(SCRIPT_URL);
-                    const data = await response.json();
-                    if (data && data.success) {
-                        setFiles(data.files.reverse());
+                    const res = await callApi('fetchData');
+                    if (res.success) {
+                        if (Array.isArray(res.files)) setFiles(res.files);
+                        if (res.settings) setSettings(res.settings);
+                        if (Array.isArray(res.faqs)) setFaqs(res.faqs);
+                    }
+                } catch (e) { }
+            };
+
+            const fetchData = async () => {
+                setLoading(true);
+                try {
+                    const res = await callApi('fetchData');
+                    if (res.success) {
+                        if (Array.isArray(res.files)) setFiles(res.files);
+                        if (res.settings) setSettings(res.settings);
+                        if (user?.role === 'admin' && Array.isArray(res.users)) setUsers(res.users);
+                        if (Array.isArray(res.faqs)) setFaqs(res.faqs);
+                    }
+                } catch (e) {
+                    console.error("Fetch error:", e);
+                }
+                setLoading(false);
+            };
+
+            const checkAnnouncement = () => {
+                const lastDismissed = localStorage.getItem('announcement_dismissed');
+                const now = Date.now();
+                if (!lastDismissed || now - parseInt(lastDismissed) > 2 * 60 * 60 * 1000) {
+                    setShowAnnouncement(true);
+                }
+            };
+
+            const callApi = async (action, data = {}) => {
+                const payload = JSON.stringify({ action, ...data });
+                console.log(`[API Request] ${action}:`, data);
+
+                try {
+                    const response = await fetch(API_URL, {
+                        method: 'POST',
+                        mode: 'cors',
+                        redirect: 'follow',
+                        headers: {
+                            'Content-Type': 'text/plain;charset=utf-8',
+                        },
+                        body: payload
+                    });
+
+                    const text = await response.text();
+                    console.log(`[API Raw Response] ${action}:`, text);
+
+                    try {
+                        const result = JSON.parse(text);
+                        return result;
+                    } catch (parseError) {
+                        console.error("[API Parse Error]:", text);
+                        return { success: false, message: "Phản hồi từ máy chủ không hợp lệ (Không phải JSON)" };
                     }
                 } catch (error) {
-                    console.error("Lỗi khi tải dữ liệu:", error);
-                    setFiles(INITIAL_FILES);
-                } finally {
-                    setIsLoading(false);
+                    console.error("[API Network Error]:", error);
+                    return { success: false, message: "Không thể kết nối tới máy chủ Google Apps Script" };
                 }
             };
 
-            const handlePopupLogin = (e) => {
+            const handleLogin = async (e) => {
                 e.preventDefault();
-                if (adminKey === 'nh4thuy') {
-                    setIsAdmin(true);
-                    setShowLoginPopup(false);
-                    setCurrentView('admin');
-                    setLoginError('');
-                    setAdminKey(''); 
-                } else {
-                    setLoginError('Key quản trị không chính xác - Hỏi Huy á!');
+                setLoading(true);
+                const username = e.target.username.value.trim();
+                const password = e.target.password.value; 
+
+                try {
+                    const res = await callApi('login', { username, password });
+                    if (res.success) {
+                        localStorage.setItem('saas_user', JSON.stringify(res.data));
+                        setUser(res.data);
+                        setView('landing');
+                        notify("Đăng nhập thành công!");
+                    } else {
+                        notify(res.message || "Sai tài khoản hoặc mật khẩu", "error");
+                    }
+                } catch (e) {
+                    notify("Lỗi kết nối máy chủ. Hãy kiểm tra lại URL Apps Script.", "error");
                 }
+                setLoading(false);
             };
 
-            const handleLogout = () => {
-                setIsAdmin(false);
-                setCurrentView('home');
-            };
-
-            const handleAddFile = async (e) => {
+            const handleRegister = async (e) => {
                 e.preventDefault();
-                if (!newFile.name || !newFile.link) return;
+                setLoading(true);
+                const username = e.target.username.value.trim();
+                const password = e.target.password.value;
 
-                const fileToAdd = {
-                    id: Date.now().toString(),
-                    name: newFile.name,
-                    note: newFile.note,
-                    link: newFile.link,
-                    date: new Date().toISOString().split('T')[0]
+                try {
+                    const res = await callApi('register', { username, password });
+                    if (res.success) {
+                        notify("Đăng ký thành công! Đang chuyển sang đăng nhập...");
+                        setTimeout(() => {
+                            setView('login');
+                            setLoading(false);
+                        }, 1500);
+                        return;
+                    } else {
+                        notify(res.message || "Đăng ký thất bại", "error");
+                    }
+                } catch (e) {
+                    notify("Lỗi hệ thống khi đăng ký", "error");
+                }
+                setLoading(false);
+            };
+
+            const handleUpload = async (e) => {
+                e.preventDefault();
+                setLoading(true);
+                const formatDate = (date) => {
+                    const d = new Date(date);
+                    const day = String(d.getDate()).padStart(2, '0');
+                    const month = String(d.getMonth() + 1).padStart(2, '0');
+                    const year = d.getFullYear();
+                    return `${day}/${month}/${year}`;
                 };
 
-                // Hiển thị file mới ngay lập tức trên màn hình
-                setFiles([fileToAdd, ...files]);
-                setNewFile({ name: '', note: '', link: '' });
-
-                if (SCRIPT_URL !== 'THAY_URL_WEB_APP_CUA_BAN_VAO_DAY') {
-                    setIsSaving(true);
-                    try {
-                        await fetch(SCRIPT_URL, {
-                            method: 'POST',
-                            mode: 'no-cors', // RẤT QUAN TRỌNG: Khắc phục lỗi CORS khi ghi data vào Google Sheets
-                            body: JSON.stringify({ action: 'add', file: fileToAdd }),
-                            headers: { 'Content-Type': 'text/plain;charset=utf-8' }
-                        });
-                    } catch (error) {
-                        console.error("Lỗi khi lưu file lên Sheet:", error);
-                    } finally {
-                        setIsSaving(false);
-                    }
-                }
-            };
-
-            const handleDeleteFile = async (id) => {
-                if (window.confirm('Bạn có chắc chắn muốn xóa tài liệu này không?')) {
-                    // Xóa file ngay trên giao diện
-                    setFiles(files.filter(file => file.id !== id));
-                    
-                    if (SCRIPT_URL !== 'THAY_URL_WEB_APP_CUA_BAN_VAO_DAY') {
-                        try {
-                            await fetch(SCRIPT_URL, {
-                                method: 'POST',
-                                mode: 'no-cors', // RẤT QUAN TRỌNG: Khắc phục lỗi CORS khi ghi data vào Google Sheets
-                                body: JSON.stringify({ action: 'delete', id: id }),
-                                headers: { 'Content-Type': 'text/plain;charset=utf-8' }
-                            });
-                        } catch (error) {
-                            console.error("Lỗi khi xoá File trên Sheet:", error);
+                const data = {
+                    id: editingFile ? editingFile.id : 'F' + Date.now(),
+                    filename: e.target.filename.value,
+                    file_url: e.target.file_url.value,
+                    uploader: user.username,
+                    status: editingFile ? editingFile.status : (user.role === 'admin' ? 'approved' : 'pending'),
+                    download_key: e.target.download_key.value || '',
+                    created_at: editingFile ? editingFile.created_at : formatDate(new Date()),
+                    download_count: editingFile ? editingFile.download_count : 0,
+                    note: e.target.note.value
+                };
+                try {
+                    const action = editingFile ? 'updateFile' : 'uploadFile';
+                    const res = await callApi(action, { data });
+                    if (res.success) {
+                        if (user.role === 'admin' && !editingFile) {
+                            notify("Vui lòng chờ giây lát...");
+                        } else {
+                            notify(editingFile ? "Đã cập nhật thông tin File!" : "Đã gửi File! Chờ Admin duyệt.");
                         }
+                        e.target.reset();
+                        setEditingFile(null);
+                        fetchData();
+                        if (user.role !== 'admin') setAdminTab('upload');
+                        else setAdminTab('admin_panel');
+                    } else {
+                        notify(res.message || "Thao tác thất bại", "error");
                     }
+                } catch (e) { notify("Lỗi hệ thống", "error"); }
+                setLoading(false);
+            };
+
+            const handleAction = async (action, id, extra = {}) => {
+                setLoading(true);
+                try {
+                    const res = await callApi(action, { id, ...extra });
+                    if (res.success) fetchData();
+                } catch (e) { notify("Thao tác thất bại", "error"); }
+                setLoading(false);
+            };
+
+            const executeDownload = (file) => {
+                if (!file || !file.file_url) {
+                    notify("Lỗi: File này không có đường dẫn tải!", "error");
+                    return;
+                }
+                const linkObj = document.createElement('a');
+                linkObj.href = file.file_url;
+                linkObj.target = '_blank'; 
+                linkObj.rel = 'noopener noreferrer';
+                document.body.appendChild(linkObj);
+                linkObj.click(); 
+                document.body.removeChild(linkObj);
+
+                handleAction('incrementDownload', file.id);
+            };
+
+            const handleDownload = (file) => {
+                if (file.download_key) {
+                    setDownloadModal({ isOpen: true, file: file, key: '' });
+                } else {
+                    executeDownload(file);
                 }
             };
-            const [showSpamPopup, setShowSpamPopup] = useState(false);
-            /* =========================================================================
-               CÁC HÀM RENDER COMPONENT
-               ========================================================================= */
 
-            const renderLoginPopup = () => {
-                if (!showLoginPopup) return null;
+            const submitDownloadKey = (e) => {
+                e.preventDefault();
+                const inputKey = String(downloadModal.key).trim();
+                const correctKey = String(downloadModal.file.download_key).trim();
 
+                if (inputKey === correctKey) {
+                    setKeyError(false); 
+                    setDownloadModal({ isOpen: false, file: null, key: '' });
+                    executeDownload(downloadModal.file); 
+                } else {
+                    setKeyError(true); 
+                }
+            };
+            const logout = () => {
+                localStorage.removeItem('saas_user');
+                setUser(null);
+                setView('landing');
+            };
+            const renderDownloadModal = () => {
+                if (!downloadModal.isOpen) return null;
                 return (
-                    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/70 backdrop-blur-sm animate-fade-in p-4">
-                        <div className="bg-slate-800 border border-slate-700 p-8 rounded-2xl shadow-2xl w-full max-w-sm relative transform transition-all">
-                            <button 
-                                onClick={() => {
-                                    setShowLoginPopup(false);
-                                    setLoginError('');
-                                    setAdminKey('');
-                                }} 
-                                className="absolute top-4 right-4 text-slate-400 hover:text-white transition-colors p-1"
-                            >
-                                <X size={20} />
+                    <div className="fixed inset-0 z-[99999] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
+                        <div className="glass w-full max-w-sm rounded-3xl border border-white/10 shadow-2xl overflow-hidden relative text-center p-8 animate-fade-in">
+                            <button onClick={() => setDownloadModal({ isOpen: false, file: null, key: '' })} className="absolute top-4 right-4 text-slate-400 hover:text-white p-2 transition-colors">
+                                <Icon name="fa-solid fa-xmark" />
                             </button>
-                            
-                            <div className="text-center mb-6">
-                                <div className="bg-blue-500/20 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 border border-blue-500/30">
-                                    <ShieldCheck size={32} className="text-blue-400" />
-                                </div>
-                                <h2 className="text-xl font-bold text-white">Xác Thực Quản Trị</h2>
-                                <p className="text-slate-400 text-sm mt-1">Nhập Key bảo mật để quản lý hệ thống</p>
+                            <div className="w-16 h-16 bg-blue-500/20 rounded-2xl flex items-center justify-center mx-auto mb-4 border border-blue-500/30 text-blue-400 text-3xl shadow-[0_0_15px_rgba(59,130,246,0.2)]">
+                                <Icon name="fa-solid fa-lock" />
                             </div>
-
-                            <form onSubmit={handlePopupLogin}>
-                                {loginError && (
-                                    <div className="mb-4 bg-red-500/20 border border-red-500/50 text-red-200 text-sm p-3 rounded-lg flex items-center gap-2">
-                                        <AlertCircle size={16} />
-                                        <span>{loginError}</span>
-                                    </div>
+                            <h3 className="text-xl font-bold text-white mb-2">Tài liệu được bảo mật</h3>
+                            <p className="text-slate-400 text-sm mb-6">Nhập Key để lấy Link <br /><strong className="text-white">{downloadModal.file?.filename}</strong></p>
+                            <form onSubmit={submitDownloadKey} className="flex flex-col gap-4">
+                                {/* Dòng chữ đỏ báo lỗi sẽ hiện ở đây nếu nhập sai */}
+                                {keyError && (
+                                    <p className="text-red-400 text-sm font-bold bg-red-500/10 p-3 rounded-lg border border-red-500/20 animate-pulse">
+                                        Key không chính xác, vui lòng thử lại!
+                                    </p>
                                 )}
-                                
+
                                 <input
-                                    type="password"
-                                    value={adminKey}
-                                    onChange={(e) => setAdminKey(e.target.value)}
-                                    placeholder="Nhập Key (VD: nh4thuy)"
-                                    className="w-full px-4 py-3 bg-slate-900 border border-slate-700 rounded-xl text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none mb-5 transition-all placeholder-slate-500"
+                                    type="text"
+                                    required
+                                    value={downloadModal.key}
+                                    onChange={(e) => {
+                                        setDownloadModal({ ...downloadModal, key: e.target.value });
+                                        setKeyError(false); 
+                                    }}
+                                    placeholder="Nhập Key..."
+                                    className="w-full text-center tracking-widest font-mono text-xl py-4"
                                     autoFocus
                                 />
-                                
-                                <button 
-                                    type="submit" 
-                                    className="w-full py-3 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-bold transition-colors shadow-lg shadow-blue-500/20 flex items-center justify-center gap-2"
-                                >
-                                    <Lock size={18} />
-                                    Đăng Nhập
+                                <button type="submit" className="w-full py-4 btn-primary rounded-xl font-bold text-lg shadow-lg shadow-blue-500/20 flex justify-center items-center gap-2">
+                                    <Icon name="fa-solid fa-unlock-keyhole" /> Xác nhận
                                 </button>
                             </form>
                         </div>
                     </div>
                 );
             };
-const renderSpamPopup = () => {
-    if (!showSpamPopup) return null;
+            // --- RENDER HELPERS ---
 
-    return (
-        <div className="fixed inset-0 z-[110] flex items-center justify-center bg-black/80 backdrop-blur-sm animate-fade-in p-4">
-            <div className="bg-slate-800 border-2 border-red-500 p-8 rounded-2xl shadow-[0_0_30px_rgba(239,68,68,0.3)] w-full max-w-sm relative transform transition-all text-center">
-                <button 
-                    onClick={() => setShowSpamPopup(false)} 
-                    className="absolute top-4 right-4 text-slate-400 hover:text-white transition-colors p-1"
-                >
-                    <X size={20} />
-                </button>
-                
-                <div className="bg-red-500/20 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4 border border-red-500/50">
-                    <AlertCircle size={40} className="text-red-500 animate-pulse" />
-                </div>
-                <h2 className="text-2xl font-bold text-red-500 mb-2">Error!</h2>
-                <p className="text-slate-300 text-lg">Không có cái gì ở đây hết<br/>Tất cả chỉ là lùa gà, nhấp vô làm gì?</p>
-                
-                <button 
-                    onClick={() => setShowSpamPopup(false)}
-                    className="mt-6 w-full py-3 bg-red-600 hover:bg-red-500 text-white rounded-xl font-bold transition-colors shadow-lg shadow-red-500/20"
-                >
-                    Né ra hộ
-                </button>
-            </div>
-        </div>
-    );
-};
-            const renderNavbar = () => (
-                <nav className="bg-slate-900/80 backdrop-blur-md border-b border-slate-800 text-white shadow-lg sticky top-0 z-40">
-                    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-                        <div 
-                            className="flex items-center space-x-3 cursor-pointer group"
-                            onClick={() => {
-                                setCurrentView('home');
-                                window.scrollTo({ top: 0, behavior: 'smooth' });
-                            }}
-                        >
-                            <div className="bg-blue-600/20 p-2 rounded-xl group-hover:bg-blue-600/40 transition-all border border-blue-500/30">
-                                <BookOpen size={24} className="text-blue-400" />
-                            </div>
-                            <span className="font-extrabold text-xl tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-white to-slate-300">
-                                KHO TÀI LIỆU TÀ ĐẠO
-                            </span>
-                        </div>
-                        
-                        <div className="flex items-center space-x-3">
-                            {isAdmin ? (
-                                <React.Fragment>
-                                    <button 
-                                        onClick={() => setCurrentView('admin')}
-                                        className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all ${currentView === 'admin' ? 'bg-blue-600 text-white shadow-md' : 'text-slate-300 hover:bg-slate-800 hover:text-white'}`}
-                                    >
-                                        Quản Lý
-                                    </button>
-                                    <button 
-                                        onClick={handleLogout}
-                                        className="flex items-center space-x-2 px-4 py-2 rounded-lg text-sm font-semibold bg-red-500/10 text-red-400 hover:bg-red-500 hover:text-white transition-all border border-red-500/20 hover:border-red-500"
-                                    >
-                                        <LogOut size={16} />
-                                        <span className="hidden sm:inline">Đăng xuất</span>
-                                    </button>
-                                </React.Fragment>
-                            ) : (
-                                <button 
-                                    onClick={() => setShowLoginPopup(true)}
-                                    className="flex items-center space-x-2 px-5 py-2 rounded-lg text-sm font-semibold bg-slate-800 hover:bg-slate-700 text-white transition-all border border-slate-700 shadow-sm hover:shadow-md transform hover:-translate-y-0.5"
-                                >
-                                    <Lock size={16} className="text-blue-400" />
-                                    <span>Quản Lý</span>
-                                </button>
-                            )}
-                        </div>
-                    </div>
-                </nav>
-            );
+            const filteredFiles = useMemo(() => {
+                const query = (searchQuery || '').toLowerCase();
+                return files.filter(f => {
+                    const filename = String(f.filename || '').toLowerCase();
+                    const uploader = String(f.uploader || '').toLowerCase();
+                    const note = String(f.note || '').toLowerCase();
+                    return filename.includes(query) || uploader.includes(query) || note.includes(query);
+                });
+            }, [files, searchQuery]);
 
-            const renderHomeView = () => (
-                <div className="animate-fade-in">
-                    {/* HERO & FILE LIST SECTION */}
-                    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 pb-12">
-                        <div className="text-center mb-16 relative">
-                            <div className="inline-flex items-center justify-center px-4 py-1.5 mb-6 text-sm font-semibold text-blue-400 bg-blue-500/10 border border-blue-500/20 rounded-full">
-                                <span className="flex w-2 h-2 bg-blue-500 rounded-full mr-2 animate-pulse shadow-[0_0_8px_rgba(59,130,246,0.8)]"></span>
-                                Hệ thống lấy link tài liệu trực tuyến
-                            </div>
-                            <h1 className="text-4xl md:text-6xl font-extrabold text-white mb-6 tracking-tight leading-tight">
-                                Kho Tài Liệu
-                                <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-indigo-400"> Tà Đạo</span>
-                            </h1>
-                            <p className="text-lg md:text-xl text-slate-400 max-w-2xl mx-auto leading-relaxed mb-8">
-                                Khám phá và tải xuống hàng ngàn file tà đạo, giáo trình và tài liệu học tập được biên soạn độc quyền bởi các chuyên gia Huy lỏ....
-                            </p>
-                            <button 
-                                onClick={() => document.getElementById('file-list-section').scrollIntoView({ behavior: 'smooth' })}
-                                className="px-8 py-3.5 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl transition-all shadow-lg shadow-blue-500/20 transform hover:-translate-y-1"
-                            >
-                                Khám Phá Tài Liệu Ngay
-                            </button>
-                        </div>
-
-                        <div id="file-list-section" className="pt-8">
-                            {isLoading ? (
-                                <div className="flex flex-col items-center justify-center py-20 bg-slate-800/20 rounded-3xl border border-slate-800">
-                                    <div className="spinner mb-4"></div>
-                                    <p className="text-slate-400">Đang tải dữ liệu từ máy chủ...</p>
-                                </div>
-                            ) : files.length === 0 ? (
-                                <div className="text-center py-24 bg-slate-800/50 rounded-3xl border border-slate-700 backdrop-blur-sm">
-                                    <div className="bg-slate-900 w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-6 border border-slate-700">
-                                        <FileText size={40} className="text-slate-500" />
-                                    </div>
-                                    <h3 className="text-xl font-bold text-white mb-2">Chưa có tài liệu</h3>
-                                    <p className="text-slate-400">Các tài liệu tà đạo sẽ sớm được quản trị viên cập nhật tại đây.</p>
-                                </div>
-                            ) : (
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                                    {files.map(file => (
-                                        <div key={file.id} className="group bg-slate-800 rounded-2xl shadow-lg border border-slate-700 hover:border-blue-500/50 overflow-hidden hover:-translate-y-1 transition-all duration-300 flex flex-col h-full">
-                                            <div className="p-8 flex-grow">
-                                                <div className="flex items-start justify-between mb-6">
-                                                    <div className="p-3 bg-slate-900 text-blue-400 border border-slate-700 rounded-xl group-hover:bg-blue-600 group-hover:text-white group-hover:border-blue-500 transition-colors">
-                                                        <FileText size={24} />
-                                                    </div>
-                                                    <div className="flex items-center text-xs font-semibold text-slate-400 bg-slate-900 px-3 py-1.5 rounded-full border border-slate-700">
-                                                        <Calendar size={12} className="mr-1.5" />
-                                                        {formatDisplayDate(file.date)}
-                                                    </div>
-                                                </div>
-                                                <h3 className="text-xl font-bold text-white mb-3 line-clamp-2 leading-tight group-hover:text-blue-400 transition-colors" title={file.name}>
-                                                    {file.name}
-                                                </h3>
-                                                <p className="text-slate-400 line-clamp-3 leading-relaxed text-sm">
-                                                    {file.note || "Tài liệu này không có mô tả chi tiết."}
-                                                </p>
-                                            </div>
-                                            <div className="p-6 pt-0 mt-auto">
-                                                <a 
-                                                    href={file.link} 
-                                                    target="_blank" 
-                                                    rel="noopener noreferrer"
-                                                    className="flex items-center justify-center w-full py-3.5 px-4 bg-slate-900 hover:bg-blue-600 text-slate-300 hover:text-white border border-slate-700 hover:border-blue-500 rounded-xl transition-all duration-300 font-semibold group/btn"
-                                                >
-                                                    <Download size={18} className="mr-2 group-hover/btn:-translate-y-0.5 transition-transform" />
-                                                    <span>Tải Xuống Ngay</span>
-                                                </a>
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                            )}
-                        </div>
-                    </div>
-
-                    {/* TRUSTED BY SECTION */}
-                    <div className="py-16 border-y border-slate-800 bg-slate-900/50">
-                        <div className="max-w-7xl mx-auto px-4 text-center">
-                            <p className="text-sm font-semibold text-slate-400 mb-8 uppercase tracking-widest">Được phong bạc bởi các tổ chức giáo dục hàng đầu</p>
-                            <div className="flex flex-wrap justify-center items-center gap-12 opacity-50 grayscale hover:grayscale-0 transition-all duration-500">
-                                <div className="text-2xl font-black text-white flex items-center gap-2"><Globe size={28}/> EduCore</div>
-                                <div className="text-2xl font-black text-white flex items-center gap-2"><BookOpen size={28}/> VNU-HCM</div>
-                                <div className="text-2xl font-black text-white flex items-center gap-2"><Users size={28}/> Global Tutors</div>
-                                <div className="text-2xl font-black text-white flex items-center gap-2"><Zap size={28}/> FastLearn</div>
-                                <div className="text-2xl font-black text-white flex items-center gap-2"><ShieldCheck size={28}/> SafeExam</div>
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* FEATURES SECTION */}
-                    <div className="py-24 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                        <div className="text-center mb-16">
-                            <h2 className="text-3xl md:text-4xl font-extrabold text-white mb-4">Tính năng không nổi bật</h2>
-                            <p className="text-slate-400 max-w-2xl mx-auto">Hệ thống được thiết kế không tối ưu, mang lại trải nghiệm tra cứu và tải tài liệu tà đạo hoàn tệ nhất từ trước đến giờ chưa có cái website nào như này cả.</p>
-                        </div>
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
-                            {[
-                                { icon: <Zap size={32} />, title: 'Tốc độ siêu tốc', desc: 'Hạ tầng máy chủ mạnh rất chậm, tải xuống tài liệu tà đạo rất lâu mà không cần chờ đợi.' },
-                                { icon: <ShieldCheck size={32} />, title: 'Bảo mật tuyệt đối', desc: 'Các tập tin chưa được quét virus định kỳ, đảm bảo chưa an toàn tuyệt đối cho thiết bị của bạn.' },
-                                { icon: <Globe size={32} />, title: 'Truy cập mọi nơi', desc: 'Giao diện chả tương thích hoàn hảo với mọi thiết bị từ điện thoại đến máy tính.' },
-                            ].map((feature, i) => (
-                                <div key={i} className="bg-slate-800 p-8 rounded-2xl border border-slate-700 hover:border-blue-500/50 transition-colors group">
-                                    <div className="w-16 h-16 bg-blue-500/10 rounded-xl flex items-center justify-center text-blue-400 mb-6 group-hover:scale-110 transition-transform">
-                                        {feature.icon}
-                                    </div>
-                                    <h3 className="text-xl font-bold text-white mb-3">{feature.title}</h3>
-                                    <p className="text-slate-400 leading-relaxed">{feature.desc}</p>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-
-                    {/* TESTIMONIALS SECTION */}
-                    <div className="py-24 bg-slate-900/50 border-y border-slate-800">
-                        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                            <div className="text-center mb-16">
-                                <h2 className="text-3xl md:text-4xl font-extrabold text-white mb-4">Cộng đồng đã nói gì về website?</h2>
-                                <p className="text-slate-400 max-w-2xl mx-auto">Hàng trăm ngàn học viên và giáo viên đã không cải thiện chất lượng học tập do không tải tài liệu tà đạo trên hệ thống.</p>
-                            </div>
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                                {[
-                                    { name: 'Nguyễn Văn A', role: 'Học sinh lớp 36', text: 'Nhờ có bộ đề thi thử Toán ở đây mà điểm thi thử của em đã tăng từ 3 lên 6. Tài liệu thực sự rất chất lượng và sát đề gốc!' },
-                                    { name: 'Trần Thị B', role: 'Giáo viên', text: 'Tôi thường xuyên không tải tài liệu tà đạo từ website để làm giáo án giảng dạy. Vì cấu trúc bài rất không logic và khó hiểu.' },
-                                    { name: 'Lê Minh C', role: 'Sinh viên ĐH Bách Khoa', text: 'Giao diện trang web cực kỳ xấu, tốc độ tải file tà đạo chậm và có quảng cáo khó chịu. Đây là kho tài liệu tệ nhất mình từng dùng.' }
-                                ].map((review, i) => (
-                                    <div key={i} className="bg-slate-800 p-8 rounded-2xl border border-slate-700 relative">
-                                        <div className="flex gap-1 text-yellow-400 mb-4">
-                                            {[...Array(5)].map((_, idx) => <Star key={idx} size={18} fill="currentColor" />)}
-                                        </div>
-                                        <p className="text-slate-300 italic mb-6 leading-relaxed">"{review.text}"</p>
-                                        <div className="flex items-center gap-4">
-                                            <div className="w-12 h-12 bg-slate-700 rounded-full flex items-center justify-center text-xl font-bold text-slate-300 border border-slate-600">
-                                                {review.name.charAt(0)}
-                                            </div>
-                                            <div>
-                                                <h4 className="font-bold text-white">{review.name}</h4>
-                                                <p className="text-sm text-slate-400">{review.role}</p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* PRICING SECTION */}
-                    <div className="py-24 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                        <div className="text-center mb-16">
-                            <h2 className="text-3xl md:text-4xl font-extrabold text-white mb-4">Gói cước phù hợp mọi nhu cầu</h2>
-                            <p className="text-slate-400 max-w-2xl mx-auto">Đăng ký ngay hôm nay để nhận được đầy đủ đặc quyền tài liệu tà đạo của Nh4tHuy.</p>
-                        </div>
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
-                            {[
-                                { name: 'Miễn Phí', price: '0đ', desc: 'Cho học sinh cá nhân', features: ['Truy cập kho tài liệu cơ bản', 'Tải tối đa 1 file/ngày', 'Không hỗ trợ gì thêm', 'Dễ dính file virus'] },
-                                { name: 'Nâng Cao', price: '99k', period: '/tháng', desc: 'Dành cho người luyện thi', featured: true, features: ['Truy cập TOÀN BỘ kho tài liệu', 'Không giới hạn số lượt tải', 'Tài liệu độc quyền có đáp án', 'Hỗ trợ ưu tiên 24/7'] },
-                                { name: 'Vô hạn', price: '199k', period: '/tháng', desc: 'Dành cho trường học/trung tâm', features: ['Mọi quyền lợi của gói Pro', 'Tải giáo án có thể chỉnh sửa', 'Cấp tài Admin web này'] }
-                            ].map((plan, i) => (
-                                <div key={i} className={`bg-slate-800 rounded-3xl border ${plan.featured ? 'border-blue-500 shadow-[0_0_30px_rgba(59,130,246,0.2)] transform md:-translate-y-4' : 'border-slate-700'} p-8 flex flex-col`}>
-                                    {plan.featured && <div className="bg-blue-600 text-white text-xs font-bold uppercase tracking-wider py-1 px-3 rounded-full self-start mb-4">Khuyên dùng</div>}
-                                    <h3 className="text-xl font-bold text-white">{plan.name}</h3>
-                                    <p className="text-slate-400 text-sm mt-2">{plan.desc}</p>
-                                    <div className="my-6">
-                                        <span className="text-4xl font-extrabold text-white">{plan.price}</span>
-                                        {plan.period && <span className="text-slate-400 font-medium">{plan.period}</span>}
-                                    </div>
-                                    <ul className="space-y-4 mb-8 flex-grow">
-                                        {plan.features.map((feat, idx) => (
-                                            <li key={idx} className="flex items-start text-slate-300">
-                                                <Check size={20} className="text-blue-400 mr-3 flex-shrink-0 mt-0.5" />
-                                                <span>{feat}</span>
-                                            </li>
-                                        ))}
-                                    </ul>
-                                    <button id="spam" className={`w-full py-3.5 rounded-xl font-bold transition-all ${plan.featured ? 'bg-blue-600 hover:bg-blue-500 text-white shadow-lg' : 'bg-slate-700 hover:bg-slate-600 text-white'}`}>
-                                        Đăng ký ngay
-                                    </button>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-
-                    {/* FAQ SECTION */}
-                    <div className="py-24 bg-slate-900/50 border-t border-slate-800">
-                        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
-                            <div className="text-center mb-12">
-                                <h2 className="text-3xl md:text-4xl font-extrabold text-white mb-4">Câu hỏi ít hay gặp</h2>
-                            </div>
-                            <div className="space-y-4">
-                                {[
-                                    { q: 'Làm thế nào để tải File tà đạo?', a: 'Rất khó hiểu! Chỉ cần không nhấn vào nút "Tải Xuống Ngay" ở dưới mỗi tài liệu. Trình duyệt sẽ không tự động điều hướng bạn tới trang tải về.' },
-                                    { q: 'Các tài liệu ở đây có cập nhật theo chương trình mới không?', a: 'Không. Website của tui thì toàn quyền là của tui mắc gì hỏi.' },
-                                    { q: 'Tôi có thể chia sẻ tài liệu cho bạn bè được không?', a: 'Được á, chia sẻ đi rồi bị dính file virus tui không chịu trách nhiệm.' },
-                                    { q: 'Hệ thống có hỗ trợ xem tài liệu trên điện thoại/máy tính không?', a: 'Không á, đang dùng thiết bị gì để coi mà hỏi quài vậy.' }
-                                ].map((faq, i) => (
-                                    <div key={i} className="bg-slate-800 border border-slate-700 rounded-2xl overflow-hidden">
-                                        <button 
-                                            className="w-full px-6 py-5 text-left flex justify-between items-center focus:outline-none hover:bg-slate-700/50 transition-colors"
-                                            onClick={() => setOpenFaq(openFaq === i ? null : i)}
-                                        >
-                                            <span className="font-bold text-white text-lg">{faq.q}</span>
-                                            <ChevronDown size={20} className={`text-slate-400 transition-transform ${openFaq === i ? 'rotate-180' : ''}`} />
-                                        </button>
-                                        <div className={`px-6 overflow-hidden transition-all duration-300 ${openFaq === i ? 'max-h-48 pb-5' : 'max-h-0'}`}>
-                                            <p className="text-slate-400 leading-relaxed">{faq.a}</p>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* FOOTER */}
-                    <footer className="bg-[#0b1121] py-12 border-t border-slate-800">
-                        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                            <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
-                                <div className="md:col-span-2">
-                                    <div className="flex items-center space-x-2 mb-4">
-                                        <BookOpen size={24} className="text-blue-500" />
-                                        <span className="font-extrabold text-xl text-white">KHO TÀI LIỆU TÀ ĐẠO</span>
-                                    </div>
-                                    <p className="text-slate-400 text-sm max-w-sm leading-relaxed">Nền tảng chia sẻ tài liệu TÀ ĐẠO trực tuyến ít nhất và được xếp loại website phong bạc hàng đầu Việt Nam.</p>
-                                </div>
-                                <div>
-                                    <h4 className="font-bold text-white mb-4">Liên kết hữu ích</h4>
-                                    <ul className="space-y-2 text-sm text-slate-400">
-                                        <li><a id="spam" href="#" className="hover:text-blue-400 transition-colors">Giới thiệu</a></li>
-                                        <li><a id="spam" href="#" className="hover:text-blue-400 transition-colors">Kho tài liệu</a></li>
-                                        <li><a id="spam" href="#" className="hover:text-blue-400 transition-colors">Đăng ký thành viên</a></li>
-                                        <li><a id="spam" href="#" className="hover:text-blue-400 transition-colors">Nhận Free 20k</a></li>
-                                    </ul>
-                                </div>
-                                <div>
-                                    <h4 className="font-bold text-white mb-4">Hỗ trợ khách hàng</h4>
-                                    <ul className="space-y-2 text-sm text-slate-400">
-                                        <li><a id="spam" href="#" className="hover:text-blue-400 transition-colors">Điều khoản dịch vụ</a></li>
-                                        <li><a id="spam" href="#" className="hover:text-blue-400 transition-colors">Chính sách bảo mật</a></li>
-                                        <li><a id="spam" href="#" className="hover:text-blue-400 transition-colors">Nhận Free 100k</a></li>
-                                        <li><a id="spam" href="#" className="hover:text-blue-400 transition-colors">Liên hệ báo lỗi</a></li>
-                                    </ul>
-                                </div>
-                            </div>
-                            <div className="border-t border-slate-800 pt-8 flex flex-col md:flex-row items-center justify-between text-sm text-slate-500">
-                                <p>© 2026 KHO TÀI LIỆU TÀ ĐẠO - COPYRIGHT NH4THUY</p>
-                                <div className="flex space-x-4 mt-4 md:mt-0">
-                                    <a id="spam" href="#" className="hover:text-white transition-colors">Facebook</a>
-                                    <a id="spam" href="#" className="hover:text-white transition-colors">Youtube</a>
-                                    <a id="spam" href="#" className="hover:text-white transition-colors">Tiktok</a>
-                                </div>
-                            </div>
-                        </div>
-                    </footer>
-                </div>
-            );
-
-            const renderAdminView = () => {
-                if (!isAdmin) {
-                    setCurrentView('home');
-                    setShowLoginPopup(true);
-                    return null;
-                }
-
+            const renderSpamPopup = () => {
+                if (!showSpamPopup) return null;
                 return (
-                    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 animate-fade-in">
-                        <div className="mb-8 border-b border-slate-800 pb-5">
-                            <h1 className="text-3xl font-extrabold text-white tracking-tight">Bảng Điều Khiển Admin</h1>
-                            <p className="text-slate-400 mt-2 text-lg flex items-center gap-2">
-                                Thêm mới, quản lý và xóa các File lưu trữ trên hệ thống.
-                                {SCRIPT_URL === 'THAY_URL_WEB_APP_CUA_BAN_VAO_DAY' && (
-                                    <span className="text-xs bg-yellow-500/20 text-yellow-400 px-2 py-1 rounded-md border border-yellow-500/30">Đang chạy Demo (Chưa kết nối API)</span>
-                                )}
-                            </p>
-                        </div>
-
-                        <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
-                            <div className="xl:col-span-1">
-                                <div className="bg-slate-800 rounded-2xl shadow-lg border border-slate-700 overflow-hidden sticky top-24">
-                                    <div className="bg-slate-900/50 p-6 border-b border-slate-700">
-                                        <h2 className="text-lg font-bold text-white flex items-center justify-between">
-                                            <div className="flex items-center">
-                                                <div className="bg-blue-500/20 border border-blue-500/30 p-1.5 rounded-lg mr-3">
-                                                    <Plus size={18} className="text-blue-400" />
-                                                </div>
-                                                Thêm File Mới Bằng Link
-                                            </div>
-                                            {isSaving && <div className="spinner w-5 h-5"></div>}
-                                        </h2>
-                                    </div>
-                                    
-                                    <form onSubmit={handleAddFile} className="p-6 space-y-5">
-                                        <div>
-                                            <label className="block text-sm font-bold text-slate-300 mb-2">Tên File hiển thị <span className="text-red-400">*</span></label>
-                                            <input 
-                                                type="text" 
-                                                value={newFile.name}
-                                                onChange={(e) => setNewFile({...newFile, name: e.target.value})}
-                                                className="w-full px-4 py-2.5 bg-slate-900 border border-slate-700 text-white rounded-xl focus:bg-slate-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all placeholder-slate-600"
-                                                placeholder="VD: Đáp án bài tập..."
-                                                required
-                                            />
-                                        </div>
-                                        
-                                        <div>
-                                            <label className="block text-sm font-bold text-slate-300 mb-2">Link Tải Về (Drive, Dropbox...) <span className="text-red-400">*</span></label>
-                                            <div className="relative">
-                                                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                                                    <LinkIcon size={16} className="text-slate-500" />
-                                                </div>
-                                                <input 
-                                                    type="url" 
-                                                    value={newFile.link}
-                                                    onChange={(e) => setNewFile({...newFile, link: e.target.value})}
-                                                    className="w-full pl-10 pr-4 py-2.5 bg-slate-900 border border-slate-700 text-white rounded-xl focus:bg-slate-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all placeholder-slate-600"
-                                                    placeholder="https://......."
-                                                    required
-                                                />
-                                            </div>
-                                        </div>
-
-                                        <div>
-                                            <label className="block text-sm font-bold text-slate-300 mb-2">Ghi chú File</label>
-                                            <textarea 
-                                                value={newFile.note}
-                                                onChange={(e) => setNewFile({...newFile, note: e.target.value})}
-                                                rows="3"
-                                                className="w-full px-4 py-3 bg-slate-900 border border-slate-700 text-white rounded-xl focus:bg-slate-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none resize-none transition-all placeholder-slate-600"
-                                                placeholder="Nhập ghi chú chi tiết về nội dung File..."
-                                            ></textarea>
-                                        </div>
-                                        
-                                        <button 
-                                            type="submit"
-                                            disabled={isSaving}
-                                            className={`w-full py-3 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl transition-colors flex items-center justify-center space-x-2 shadow-lg shadow-blue-500/20 ${isSaving ? 'opacity-70 cursor-not-allowed' : ''}`}
-                                        >
-                                            <Plus size={18} />
-                                            <span>{isSaving ? 'Đang Xử Lý...' : 'Thêm Vào Hệ Thống'}</span>
-                                        </button>
-                                    </form>
-                                </div>
+                    <div className="fixed inset-0 z-[10000] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
+                        <div className="bg-slate-800 border-2 border-red-500 p-8 rounded-2xl shadow-[0_0_30px_rgba(239,68,68,0.3)] w-full max-w-sm relative text-center">
+                            <div className="bg-red-500/20 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4 border border-red-500/50">
+                                <Icon name="fa-solid fa-triangle-exclamation" className="text-red-500 text-4xl animate-pulse" />
                             </div>
-
-                            <div className="xl:col-span-2">
-                                <div className="bg-slate-800 rounded-2xl shadow-lg border border-slate-700 overflow-hidden">
-                                    <div className="p-6 border-b border-slate-700 flex justify-between items-center bg-slate-900/50">
-                                        <h2 className="text-lg font-bold text-white flex items-center">
-                                            Danh Sách Quản Lý 
-                                            <span className="ml-3 px-3 py-1 bg-slate-900 border border-slate-700 text-blue-400 text-sm rounded-full">{files.length} file</span>
-                                        </h2>
-                                    </div>
-                                    
-                                    {isLoading ? (
-                                        <div className="flex flex-col items-center justify-center py-20">
-                                            <div className="spinner mb-4"></div>
-                                            <p className="text-slate-400">Đang tải dữ liệu...</p>
-                                        </div>
-                                    ) : files.length === 0 ? (
-                                        <div className="p-12 text-center">
-                                            <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-slate-900 border border-slate-700 mb-4">
-                                                <BookOpen size={28} className="text-slate-600" />
-                                            </div>
-                                            <p className="text-slate-400 font-medium text-lg">Hệ thống chưa có tài liệu nào.</p>
-                                        </div>
-                                    ) : (
-                                        <ul className="divide-y divide-slate-700/50">
-                                            {files.map(file => (
-                                                <li key={file.id} className="p-6 hover:bg-slate-700/30 transition-colors flex flex-col sm:flex-row sm:items-start justify-between gap-6 group">
-                                                    <div className="flex-1 overflow-hidden">
-                                                        <h3 className="font-extrabold text-white text-lg group-hover:text-blue-400 transition-colors flex items-center gap-2 flex-wrap">
-                                                            {file.name}
-                                                        </h3>
-                                                        <p className="text-slate-400 mt-2 line-clamp-2 leading-relaxed">{file.note}</p>
-                                                        <div className="flex items-center space-x-6 mt-4">
-                                                            <span className="flex items-center text-sm font-medium text-slate-500">
-                                                                <Calendar size={14} className="mr-1.5" />
-                                                               {formatDisplayDate(file.date)}
-                                                            </span>
-                                                            <a href={file.link} target="_blank" rel="noopener noreferrer" className="flex items-center text-sm font-bold text-blue-400 hover:text-blue-300 hover:underline truncate">
-                                                                <LinkIcon size={14} className="mr-1.5 flex-shrink-0" /> Mở liên kết tải
-                                                            </a>
-                                                        </div>
-                                                    </div>
-                                                    
-                                                    <div className="flex items-center sm:mt-0 mt-2 flex-shrink-0">
-                                                        <button 
-                                                            onClick={() => handleDeleteFile(file.id)}
-                                                            className="flex items-center px-3 py-2 text-sm font-semibold text-red-400 hover:text-red-300 bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 hover:border-red-500/50 rounded-lg transition-all"
-                                                            title="Xóa tài liệu này"
-                                                        >
-                                                            <Trash2 size={16} className="mr-2" />
-                                                            Xóa
-                                                        </button>
-                                                    </div>
-                                                </li>
-                                            ))}
-                                        </ul>
-                                    )}
-                                </div>
-                            </div>
+                            <h2 className="text-2xl font-bold text-red-500 mb-2">Cảnh Báo!</h2>
+                            <p className="text-slate-300 text-lg">Nút này không có chức năng. <br/>Nhấp vô làm gì thế...</p>
+                            <br />
+                            <button onClick={() => setShowSpamPopup(false)} className="px-8 py-4 glass rounded-xl font-bold text-lg hover:bg-white/5 transform hover:-translate-y-1 transition-all">
+                                Né hộ
+                            </button>
                         </div>
                     </div>
                 );
             };
 
+            if (view === 'landing') {
+                return (
+                    <div className="min-h-screen selection:bg-blue-500/30 relative flex flex-col">
+                        {/* TOAST NOTIFICATION */}
+                        <AnimatePresence>
+                            {notification.show && (
+                                <motion.div
+                                    initial={{ opacity: 0, y: -20, x: '-50%' }}
+                                    animate={{ opacity: 1, y: 20, x: '-50%' }}
+                                    exit={{ opacity: 0, y: -20, x: '-50%' }}
+                                    className={`fixed top-0 left-1/2 z-[10000] px-6 py-3 rounded-xl shadow-2xl border flex items-center gap-3 font-bold min-w-[300px] ${notification.type === 'success'
+                                            ? 'bg-emerald-500/90 border-emerald-400 text-white'
+                                            : 'bg-red-500/90 border-red-400 text-white'
+                                        }`}
+                                >
+                                    <Icon name={notification.type === 'success' ? "fa-solid fa-circle-check" : "fa-solid fa-circle-exclamation"} />
+                                    <span>{notification.message}</span>
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
+
+                        <nav className="p-4 md:p-6 flex justify-between items-center max-w-7xl mx-auto w-full sticky top-0 z-50 glass rounded-b-2xl">
+                            
+                            <div className="text-xl md:text-2xl font-bold gradient-text flex items-center gap-2 cursor-pointer whitespace-nowrap" onClick={() => setView('landing')}>
+                                <Icon name="fa-solid fa-book-open" className="text-blue-400" />
+                                <span className="hidden sm:inline">KHO TÀI LIỆU TÀ ĐẠO</span>
+                                <span className="sm:hidden text-lg">TÀ ĐẠO</span>
+                            </div>
+                            <div className="flex items-center gap-2 md:gap-4">
+                                {user ? (
+                                    <>
+                                        {/* Nút Tải lên (Icon trên mobile, có chữ trên PC) */}
+                                        <button onClick={() => { setView('dashboard'); setAdminTab('upload'); }} className="flex items-center gap-2 px-3 py-2 md:px-5 md:py-2.5 bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500 hover:text-white rounded-xl font-bold transition-all" title="Tải lên file">
+                                            <Icon name="fa-solid fa-cloud-arrow-up" />
+                                            <span className="hidden md:inline">Tải lên</span>
+                                        </button>
+
+                                        {/* Nút Quản trị cho Admin (Icon trên mobile, có chữ trên PC) */}
+                                        {user.role === 'admin' && (
+                                            <button onClick={() => { setAdminTab('admin_panel'); setView('dashboard'); }} className="px-3 py-2 md:px-5 md:py-2.5 bg-blue-600 text-white hover:bg-blue-500 rounded-xl font-bold transition-all shadow-lg shadow-blue-500/20 flex items-center gap-2" title="Quản trị">
+                                                <Icon name="fa-solid fa-user-shield" />
+                                                <span className="hidden md:inline">Quản trị</span>
+                                            </button>
+                                        )}
+
+                                        <div className="h-6 md:h-8 w-[1px] bg-white/10 mx-1 md:mx-2"></div>
+
+                                        {/* Khu vực User (Icon + Tên rút gọn trên mobile) */}
+                                        <div className="flex items-center gap-2 md:gap-3 px-2 py-1 md:px-3 md:py-1.5 glass rounded-full">
+                                            <div className="w-7 h-7 md:w-8 md:h-8 rounded-full bg-blue-500/20 flex items-center justify-center text-blue-400 font-bold text-xs">
+                                                {(user.username || 'U')[0].toUpperCase()}
+                                            </div>
+                                            <span className="text-sm font-bold hidden sm:inline truncate max-w-[80px] md:max-w-none">{user.username}</span>
+                                            <button onClick={logout} className="p-1.5 md:p-2 hover:text-red-400 transition-colors" title="Đăng xuất">
+                                                <Icon name="fa-solid fa-right-from-bracket" />
+                                            </button>
+                                        </div>
+                                    </>
+                                ) : (
+                                    <>
+                                        {/* Nút Đăng nhập (Icon trên mobile, có chữ trên PC) */}
+                                        <button onClick={() => setView('login')} className="px-3 py-2 md:px-5 hover:text-blue-400 transition-colors font-bold flex items-center gap-2" title="Đăng nhập">
+                                            <Icon name="fa-solid fa-right-to-bracket" className="md:hidden text-lg" />
+                                            <span className="hidden md:inline">Đăng nhập</span>
+                                        </button>
+
+                                        {/* Nút Đăng ký (Icon trên mobile, có chữ trên PC) */}
+                                        <button onClick={() => setView('register')} className="px-4 py-2 md:px-6 btn-primary rounded-full font-bold shadow-lg shadow-blue-500/20 flex items-center gap-2" title="Bắt đầu ngay">
+                                            <Icon name="fa-solid fa-user-plus" className="md:hidden" />
+                                            <span className="hidden md:inline">Đăng ký</span>
+                                        </button>
+                                    </>
+                                )}
+                            </div>
+                        </nav>
+                        {/* HERO SECTION */}
+                        <main className="flex-grow">
+                            <section className="flex flex-col items-center justify-center text-center px-4 py-12 md:py-24 mt-4 md:mt-0 w-full overflow-hidden">
+                                <motion.div
+                                    initial={{ opacity: 0, y: 20 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    className="inline-flex items-center justify-center px-4 py-1.5 mb-6 text-sm font-semibold text-blue-400 bg-blue-500/10 border border-blue-500/20 rounded-full"
+                                >
+                                    <span className="flex w-2 h-2 bg-blue-500 rounded-full mr-2 animate-pulse shadow-[0_0_8px_rgba(59,130,246,0.8)]"></span>
+                                    Hệ thống lấy link tài liệu trực tuyến
+                                </motion.div>
+                                <motion.h1
+                                    initial={{ opacity: 0, y: 20 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    transition={{ delay: 0.1 }}
+                                    className="text-4xl md:text-6xl font-extrabold text-white mb-6 tracking-tight leading-tight">
+                                    Kho Tài Liệu  <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-indigo-400"> Tà Đạo</span>
+                                </motion.h1>
+                                <motion.p
+                                    initial={{ opacity: 0, y: 20 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    transition={{ delay: 0.2 }}
+                                    className="text-slate-400 text-base md:text-xl max-w-2xl mx-auto leading-relaxed mb-8 md:mb-10 px-4"
+                                >
+                                    Khám phá và tải xuống hàng ngàn file tà đạo, giáo trình và tài liệu học tập được biên soạn độc quyền bởi các chuyên gia Huy lỏ....
+                                </motion.p>
+                                <motion.div
+                                    initial={{ opacity: 0, y: 20 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    transition={{ delay: 0.3 }}
+                                    className="flex flex-col sm:flex-row justify-center gap-4 w-full px-6 sm:px-0 max-w-md sm:max-w-none mx-auto"
+                                >
+                                    {!user ? (
+                                        <button onClick={() => setView('register')} className="w-full sm:w-auto px-6 py-3.5 md:px-8 md:py-4 btn-primary rounded-xl font-bold text-base md:text-lg shadow-xl shadow-blue-500/20 transform hover:-translate-y-1 transition-all">Đăng ký tài khoản</button>
+                                    ) : (
+                                        <button onClick={() => { setView('dashboard'); setAdminTab('upload'); }} className="w-full sm:w-auto px-6 py-3.5 md:px-8 md:py-4 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl font-bold text-base md:text-lg shadow-xl shadow-emerald-500/20 transform hover:-translate-y-1 transition-all flex items-center justify-center gap-3">
+                                            <Icon name="fa-solid fa-cloud-arrow-up" />
+                                            Tải lên tài liệu ngay
+                                        </button>
+                                    )}
+                                    <button onClick={() => document.getElementById('file-list').scrollIntoView({ behavior: 'smooth' })} className="w-full sm:w-auto px-6 py-3.5 md:px-8 md:py-4 glass rounded-xl font-bold text-base md:text-lg hover:bg-white/5 transform hover:-translate-y-1 transition-all">Khám phá tài liệu</button>
+                                </motion.div>
+                            </section>
+
+                            {/* TRUSTED BY SECTION */}
+                            <section className="py-16 border-y border-slate-800 bg-slate-900/50">
+                                <div className="max-w-7xl mx-auto px-4 text-center">
+                                    <p className="text-sm font-semibold text-slate-400 mb-8 uppercase tracking-widest">Được phong bạc bởi các tổ chức giáo dục hàng đầu</p>
+                                    <div className="flex flex-wrap justify-center items-center gap-12 opacity-50 grayscale hover:grayscale-0 transition-all duration-500">
+                                        <div className="text-2xl font-black text-white flex items-center gap-2"><Icon name="fa-solid fa-globe" /> EduCore</div>
+                                        <div className="text-2xl font-black text-white flex items-center gap-2"><Icon name="fa-solid fa-book-open" /> VNU-HCM</div>
+                                        <div className="text-2xl font-black text-white flex items-center gap-2"><Icon name="fa-solid fa-users" /> Global Tutors</div>
+                                        <div className="text-2xl font-black text-white flex items-center gap-2"><Icon name="fa-solid fa-bolt" /> FastLearn</div>
+                                    </div>
+                                </div>
+                            </section>
+
+                            {/* FILE LIST SECTION */}
+                            <section id="file-list" className="py-24 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                                <div className="text-center mb-16">
+                                    <h2 className="text-3xl md:text-4xl font-extrabold text-white mb-4">Tài liệu mới cập nhật</h2>
+                                    <p className="text-slate-400 max-w-2xl mx-auto">Danh sách các tài liệu tà đạo mới nhất được cộng đồng chia sẻ.</p>
+                                </div>
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                                    {files.filter(f => f.status === 'approved').slice(0, 9).map(file => (
+                                        <div key={file.id} className="glass p-8 rounded-3xl border border-slate-700 hover:border-blue-500/50 transition-all group flex flex-col h-full">
+                                            <div className="flex justify-between items-start mb-6">
+                                                <div className="w-14 h-14 bg-blue-500/10 rounded-2xl flex items-center justify-center text-blue-400 text-2xl group-hover:bg-blue-600 group-hover:text-white transition-all"><Icon name="fa-solid fa-file-lines" /></div>
+                                                <div className="text-right">
+                                                    <div className="text-xs text-slate-500 font-bold uppercase mb-1">Lượt tải</div>
+                                                    <div className="font-bold text-lg">{file.download_count}</div>
+                                                </div>
+                                            </div>
+                                            <h3 className="text-xl font-bold mb-3 truncate group-hover:text-blue-400 transition-colors">{file.filename}</h3>
+                                            <p className="text-slate-400 text-sm mb-6 line-clamp-2 h-10">{file.note || 'Không có ghi chú'}</p>
+                                            <div className="mt-auto">
+                                                {user ? (
+                                                    <button onClick={() => handleDownload(file)} className="w-full py-3.5 btn-primary rounded-xl font-bold hover:shadow-blue-500/40 transition-all flex items-center justify-center gap-3">
+                                                        <Icon name={file.download_key ? "fa-solid fa-lock" : "fa-solid fa-download"} />
+                                                        {file.download_key ? 'Tải bằng Key' : 'Tải xuống ngay'}
+                                                    </button>
+                                                ) : (
+                                                    <button onClick={() => setView('login')} className="w-full py-3.5 glass rounded-xl font-bold hover:bg-blue-600 hover:text-white transition-all flex items-center justify-center gap-3">
+                                                        <Icon name="fa-solid fa-download" />
+                                                        Đăng nhập để tải
+                                                    </button>
+                                                )}
+                                            </div>
+                                        </div>
+                                    ))}
+                                    {files.filter(f => f.status === 'approved').length === 0 && (
+                                        <div className="col-span-full text-center py-12 bg-slate-800/50 rounded-3xl border border-slate-700">
+                                            <p className="text-slate-500">Đang tải dữ liệu từ database...</p>
+                                        </div>
+                                    )}
+                                </div>
+                            </section>
+
+                            {/* FEATURES SECTION */}
+                            <section className="py-24 bg-slate-900/50 border-y border-slate-800">
+                                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                                    <div className="text-center mb-16">
+                                        <h2 className="text-3xl md:text-4xl font-extrabold text-white mb-4">Tính năng không nổi bật</h2>
+                                        <p className="text-slate-400 max-w-2xl mx-auto">Hệ thống được thiết kế không tối ưu, mang lại trải nghiệm tra cứu và tải tài liệu tà đạo hoàn tệ nhất.</p>
+                                    </div>
+                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
+                                        {[
+                                            { icon: "fa-solid fa-bolt", title: 'Tốc độ siêu tốc', desc: 'Hạ tầng máy chủ mạnh rất chậm, tải xuống tài liệu tà đạo rất lâu.' },
+                                            { icon: "fa-solid fa-shield-halved", title: 'Bảo mật tuyệt đối', desc: 'Các tập tin chưa được quét virus định kỳ, đảm bảo chưa an toàn.' },
+                                            { icon: "fa-solid fa-globe", title: 'Truy cập mọi nơi', desc: 'Giao diện chả tương thích hoàn hảo với mọi thiết bị.' },
+                                        ].map((feature, i) => (
+                                            <div key={i} className="glass p-8 rounded-2xl border border-slate-700 hover:border-blue-500/50 transition-colors group">
+                                                <div className="w-16 h-16 bg-blue-500/10 rounded-xl flex items-center justify-center text-blue-400 mb-6 group-hover:scale-110 transition-transform text-3xl">
+                                                    <Icon name={feature.icon} />
+                                                </div>
+                                                <h3 className="text-xl font-bold text-white mb-3">{feature.title}</h3>
+                                                <p className="text-slate-400 leading-relaxed">{feature.desc}</p>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            </section>
+
+                            {/* TESTIMONIALS SECTION */}
+                            <section className="py-24 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                                <div className="text-center mb-16">
+                                    <h2 className="text-3xl md:text-4xl font-extrabold text-white mb-4">Cộng đồng đã nói gì?</h2>
+                                    <p className="text-slate-400 max-w-2xl mx-auto">Hàng trăm ngàn học viên đã không cải thiện chất lượng học tập do không tải tài liệu.</p>
+                                </div>
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                                    {[
+                                        { name: 'Nguyễn Văn A', role: 'Học sinh lớp 36', text: 'Nhờ có bộ đề thi thử Toán ở đây mà điểm thi thử của em đã tăng từ 3 lên 6. Tài liệu thực sự rất chất lượng!' },
+                                        { name: 'Trần Thị B', role: 'Giáo viên', text: 'Tôi thường xuyên không tải tài liệu tà đạo từ website để làm giáo án giảng dạy. Vì cấu trúc bài rất không logic.' },
+                                        { name: 'Lê Minh C', role: 'Sinh viên ĐH Bách Khoa', text: 'Giao diện trang web cực kỳ xấu, tốc độ tải file tà đạo chậm và có quảng cáo khó chịu.' }
+                                    ].map((review, i) => (
+                                        <div key={i} className="glass p-8 rounded-2xl border border-slate-700 relative">
+                                            <div className="flex gap-1 text-yellow-400 mb-4">
+                                                {[...Array(5)].map((_, idx) => <Icon key={idx} name="fa-solid fa-star" className="text-sm" />)}
+                                            </div>
+                                            <p className="text-slate-300 italic mb-6 leading-relaxed">"{review.text}"</p>
+                                            <div className="flex items-center gap-4">
+                                                <div className="w-12 h-12 bg-slate-700 rounded-full flex items-center justify-center text-xl font-bold text-slate-300 border border-slate-600">
+                                                    {review.name.charAt(0)}
+                                                </div>
+                                                <div>
+                                                    <h4 className="font-bold text-white">{review.name}</h4>
+                                                    <p className="text-sm text-slate-400">{review.role}</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </section>
+
+                            {/* PRICING SECTION */}
+                            <section className="py-24 bg-slate-900/50 border-t border-slate-800">
+                                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                                    <div className="text-center mb-16">
+                                        <h2 className="text-3xl md:text-4xl font-extrabold text-white mb-4">Gói cước phù hợp</h2>
+                                        <p className="text-slate-400 max-w-2xl mx-auto">Đăng ký ngay hôm nay để nhận được đầy đủ đặc quyền tài liệu tà đạo.</p>
+                                    </div>
+                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+                                        {[
+                                            { name: 'Miễn Phí', price: '0đ', desc: 'Cho học sinh cá nhân', features: ['Truy cập kho tài liệu cơ bản', 'Tải tối đa 1 file/ngày', 'Không hỗ trợ gì thêm', 'Dễ dính file virus'] },
+                                            { name: 'Nâng Cao', price: '99k', period: '/tháng', desc: 'Dành cho người luyện thi', featured: true, features: ['Truy cập TOÀN BỘ kho tài liệu', 'Không giới hạn số lượt tải', 'Tài liệu độc quyền có đáp án', 'Hỗ trợ ưu tiên 24/7'] },
+                                            { name: 'Vô hạn', price: '199k', period: '/tháng', desc: 'Dành cho trường học', features: ['Mọi quyền lợi của gói Pro', 'Tải giáo án có thể chỉnh sửa', 'Cấp tài Admin web này'] }
+                                        ].map((plan, i) => (
+                                            <div key={i} className={`glass rounded-3xl border ${plan.featured ? 'border-blue-500 shadow-[0_0_30px_rgba(59,130,246,0.2)] transform md:-translate-y-4' : 'border-slate-700'} p-8 flex flex-col`}>
+                                                {plan.featured && <div className="bg-blue-600 text-white text-xs font-bold uppercase tracking-wider py-1 px-3 rounded-full self-start mb-4">Khuyên dùng</div>}
+                                                <h3 className="text-xl font-bold text-white">{plan.name}</h3>
+                                                <p className="text-slate-400 text-sm mt-2">{plan.desc}</p>
+                                                <div className="my-6">
+                                                    <span className="text-4xl font-extrabold text-white">{plan.price}</span>
+                                                    {plan.period && <span className="text-slate-400 font-medium">{plan.period}</span>}
+                                                </div>
+                                                <ul className="space-y-4 mb-8 flex-grow">
+                                                    {plan.features.map((feat, idx) => (
+                                                        <li key={idx} className="flex items-start text-slate-300">
+                                                            <Icon name="fa-solid fa-check" className="text-blue-400 mr-3 mt-1" />
+                                                            <span>{feat}</span>
+                                                        </li>
+                                                    ))}
+                                                </ul>
+                                                <button id='spam' className={`w-full py-3.5 rounded-xl font-bold transition-all ${plan.featured ? 'bg-blue-600 hover:bg-blue-500 text-white shadow-lg' : 'bg-slate-700 hover:bg-slate-600 text-white'}`}>
+                                                    Đăng ký ngay
+                                                </button>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            </section>
+
+                            {/* FAQ SECTION */}
+                            <section className="py-24 max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+                                <div className="text-center mb-12">
+                                    <h2 className="text-3xl md:text-4xl font-extrabold text-white mb-4">Câu hỏi hay gặp</h2>
+                                </div>
+                                <div className="space-y-4">
+                                    {(faqs.length > 0 ? faqs : [
+                                        { question: 'Làm thế nào để tải File?', answer: 'Chỉ cần nhấn vào nút "Tải Xuống Ngay" ở dưới mỗi tài liệu lad có thể tải.' },
+                                        { question: 'Tài liệu có cập nhật không?', answer: 'Hệ thống cập nhật tài liệu mới hàng ngày từ cộng đồng.' },
+                                        { question: 'Tôi có thể chia sẻ tài liệu không?', answer: 'Bạn có thể upload tài liệu của mình lên để chia sẻ với mọi người.' },
+                                        { question: 'Hệ thống có an toàn không?', answer: 'Chúng tôi cố gắng kiểm duyệt tài liệu nhưng bạn nên cẩn thận khi tải.' }
+                                    ]).map((faq, i) => (
+                                        <div key={i} className="glass border border-slate-700 rounded-2xl overflow-hidden">
+                                            <button
+                                                className="w-full px-6 py-5 text-left flex justify-between items-center focus:outline-none hover:bg-white/5 transition-colors"
+                                                onClick={() => setOpenFaq(openFaq === i ? null : i)}
+                                            >
+                                                <span className="font-bold text-white text-lg">{faq.question || faq.q}</span>
+                                                <Icon name="fa-solid fa-chevron-down" className={`text-slate-400 transition-transform ${openFaq === i ? 'rotate-180' : ''}`} />
+                                            </button>
+                                            <div className={`px-6 overflow-hidden transition-all duration-300 ${openFaq === i ? 'max-h-96 pb-5' : 'max-h-0'}`}>
+                                                <p className="text-slate-400 leading-relaxed">{faq.answer || faq.a}</p>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </section>
+
+                            {/* FOOTER */}
+                            <footer className="bg-[#0b1121] py-12 border-t border-slate-800">
+                                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                                    <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
+                                        <div className="md:col-span-2">
+                                            <div className="flex items-center space-x-2 mb-4">
+                                                <Icon name="fa-solid fa-book-open" className="text-blue-500 text-2xl" />
+                                                <span className="font-extrabold text-xl text-white">KHO TÀI LIỆU TÀ ĐẠO</span>
+                                            </div>
+                                            <p className="text-slate-400 text-sm max-w-sm leading-relaxed">Nền tảng chia sẻ tài liệu TÀ ĐẠO trực tuyến hàng đầu Việt Nam.</p>
+                                        </div>
+                                        <div>
+                                            <h4 className="font-bold text-white mb-4">Liên kết</h4>
+                                            <ul className="space-y-2 text-sm text-slate-400">
+                                                <li><a id='spam' href="#" className="hover:text-blue-400">Giới thiệu</a></li>
+                                                <li><a id='spam' href="#" className="hover:text-blue-400">Kho tài liệu</a></li>
+                                                <li><a id='spam' href="#" className="hover:text-blue-400">Đăng ký</a></li>
+                                            </ul>
+                                        </div>
+                                        <div>
+                                            <h4 className="font-bold text-white mb-4">Hỗ trợ</h4>
+                                            <ul className="space-y-2 text-sm text-slate-400">
+                                                <li><a id="spam" className="hover:text-blue-400">Điều khoản</a></li>
+                                                <li><a id='spam' href="#" className="hover:text-blue-400">Bảo mật</a></li>
+                                                <li><a id='spam' href="#" className="hover:text-blue-400">Liên hệ</a></li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                    <div className="border-t border-slate-800 pt-8 flex flex-col md:flex-row items-center justify-between text-sm text-slate-500">
+                                        <p>© 2026 KHO TÀI LIỆU TÀ ĐẠO - COPYRIGHT NH4THUY</p>
+                                        <div className="flex space-x-4 mt-4 md:mt-0">
+                                            <Icon id='spam' name="fa-brands fa-facebook" className="hover:text-white cursor-pointer" />
+                                            <Icon id='spam' name="fa-brands fa-youtube" className="hover:text-white cursor-pointer" />
+                                            <Icon id='spam' name="fa-brands fa-tiktok" className="hover:text-white cursor-pointer" />
+                                        </div>
+                                    </div>
+                                </div>
+                            </footer>
+
+                            {/* ANNOUNCEMENT MODAL FOR LANDING */}
+                            <Modal
+                                isOpen={showAnnouncement && settings.announcement_enabled === 'true'}
+                                onClose={() => setShowAnnouncement(false)}
+                                title="Thông báo hệ thống"
+                            >
+                                <div className="flex flex-col gap-6">
+                                    <div className="p-4 bg-blue-500/10 border border-blue-500/20 rounded-xl text-blue-200 leading-relaxed">
+                                        {settings.announcement}
+                                    </div>
+                                    <div className="flex gap-4">
+                                        <button onClick={() => setShowAnnouncement(false)} className="flex-grow py-3 btn-primary rounded-xl font-bold">Đã hiểu</button>
+                                        <button onClick={() => {
+                                            localStorage.setItem('announcement_dismissed', Date.now().toString());
+                                            setShowAnnouncement(false);
+                                        }} className="px-6 py-3 glass rounded-xl text-sm font-medium">Không hiện lại trong 2h</button>
+                                    </div>
+                                </div>
+                            </Modal>
+
+                            {renderSpamPopup()}
+                            {renderDownloadModal()}
+                        </main>
+                    </div>
+                );
+            }
+
+            if (view === 'login' || view === 'register') {
+                return (
+                    <div className="min-h-screen flex items-center justify-center p-6 bg-[#0f172a] relative">
+                        {/* TOAST NOTIFICATION */}
+                        <AnimatePresence>
+                            {notification.show && (
+                                <motion.div
+                                    initial={{ opacity: 0, y: -20, x: '-50%' }}
+                                    animate={{ opacity: 1, y: 20, x: '-50%' }}
+                                    exit={{ opacity: 0, y: -20, x: '-50%' }}
+                                    className={`fixed top-0 left-1/2 z-[10000] px-6 py-3 rounded-xl shadow-2xl border flex items-center gap-3 font-bold min-w-[300px] ${notification.type === 'success'
+                                            ? 'bg-emerald-500/90 border-emerald-400 text-white'
+                                            : 'bg-red-500/90 border-red-400 text-white'
+                                        }`}
+                                >
+                                    <Icon name={notification.type === 'success' ? "fa-solid fa-circle-check" : "fa-solid fa-circle-exclamation"} />
+                                    <span>{notification.message}</span>
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
+                        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+                            <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-blue-500/10 rounded-full blur-[120px]"></div>
+                            <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-purple-500/10 rounded-full blur-[120px]"></div>
+                        </div>
+
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.9 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            className="glass p-8 md:p-10 rounded-3xl w-full max-w-md shadow-2xl relative z-10"
+                        >
+                            <div className="text-center mb-8">
+                                <div className="w-16 h-16 bg-blue-600/20 rounded-2xl flex items-center justify-center mx-auto mb-4 border border-blue-500/30">
+                                    <Icon name={view === 'login' ? "fa-solid fa-shield-halved" : "fa-solid fa-user-plus"} className="text-3xl text-blue-400" />
+                                </div>
+                                <h2 className="text-3xl font-bold mb-2">{view === 'login' ? 'Đăng nhập hệ thống' : 'Tạo tài khoản mới'}</h2>
+                                <p className="text-slate-400">{view === 'login' ? 'Đăng nhập để tải File lên' : 'Tham gia cộng đồng lùa gà ngay hôm nay'}</p>
+                            </div>
+
+                            <form onSubmit={view === 'login' ? handleLogin : handleRegister} className="flex flex-col gap-6">
+                                <div className="flex flex-col gap-3">
+                                    <label className="text-sm font-bold text-slate-300 ml-1 uppercase tracking-wider">Tên đăng nhập</label>
+                                    <div className="relative">
+                                        <Icon name="fa-solid fa-user" className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-500 text-lg" />
+                                        <input
+                                            name="username"
+                                            type="text"
+                                            required
+                                            placeholder="Nhập username của bạn..."
+                                            className="w-full pl-14 py-5 text-lg font-medium"
+                                        />
+                                    </div>
+                                </div>
+                                <div className="flex flex-col gap-3">
+                                    <label className="text-sm font-bold text-slate-300 ml-1 uppercase tracking-wider">Mật khẩu</label>
+                                    <div className="relative">
+                                        <Icon name="fa-solid fa-lock" className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-500 text-lg" />
+                                        <input
+                                            name="password"
+                                            type="password"
+                                            required
+                                            placeholder="Nhập mật khẩu..."
+                                            className="w-full pl-14 py-5 text-lg font-medium"
+                                        />
+                                    </div>
+                                </div>
+
+                                <button
+                                    type="submit"
+                                    disabled={loading}
+                                    className={`btn-primary py-5 rounded-2xl font-bold text-xl mt-4 shadow-xl shadow-blue-500/20 transform hover:-translate-y-1 transition-all flex items-center justify-center gap-3 ${loading ? 'opacity-70 cursor-not-allowed' : ''}`}
+                                >
+                                    {loading ? (
+                                        <div className="loader w-6 h-6 border-2"></div>
+                                    ) : (
+                                        <>
+                                            <Icon name={view === 'login' ? "fa-solid fa-right-to-bracket" : "fa-solid fa-user-plus"} />
+                                            {view === 'login' ? 'Đăng nhập' : 'Đăng ký'}
+                                        </>
+                                    )}
+                                </button>
+                            </form>
+
+                            <div className="mt-8 text-center">
+                                {view === 'login' ? (
+                                    <p className="text-slate-400">Chưa có tài khoản? <button onClick={() => setView('register')} className="text-blue-400 font-bold hover:underline">Đăng ký ngay</button></p>
+                                ) : (
+                                    <p className="text-slate-400">Đã có tài khoản? <button onClick={() => setView('login')} className="text-blue-400 font-bold hover:underline">Đăng nhập</button></p>
+                                )}
+                                <button onClick={() => setView('landing')} className="mt-6 text-sm text-slate-500 hover:text-white transition-colors flex items-center justify-center gap-2 mx-auto">
+                                    <Icon name="fa-solid fa-arrow-left" /> Quay lại trang chủ
+                                </button>
+                            </div>
+                        </motion.div>
+                        {loading && <LoadingOverlay />}
+                    </div>
+                );
+            }
+
+            // --- DASHBOARD VIEW ---
+            if (!user) {
+                setTimeout(() => setView('landing'), 0);
+                return <LoadingOverlay />;
+            }
+
             return (
-                <div className="min-h-screen selection:bg-blue-500/30 relative flex flex-col">
-                    {renderNavbar()}
-                    <main className="flex-grow">
-                        {currentView === 'home' && renderHomeView()}
-                        {currentView === 'admin' && renderAdminView()}
+                <div className="min-h-screen flex relative">
+                    {/* TOAST NOTIFICATION */}
+                    <AnimatePresence>
+                        {notification.show && (
+                            <motion.div
+                                initial={{ opacity: 0, y: -20, x: '-50%' }}
+                                animate={{ opacity: 1, y: 20, x: '-50%' }}
+                                exit={{ opacity: 0, y: -20, x: '-50%' }}
+                                className={`fixed top-0 left-1/2 z-[10000] px-6 py-3 rounded-xl shadow-2xl border flex items-center gap-3 font-bold min-w-[300px] ${notification.type === 'success'
+                                        ? 'bg-emerald-500/90 border-emerald-400 text-white'
+                                        : 'bg-red-500/90 border-red-400 text-white'
+                                    }`}
+                            >
+                                <Icon name={notification.type === 'success' ? "fa-solid fa-circle-check" : "fa-solid fa-circle-exclamation"} />
+                                <span>{notification.message}</span>
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
+                    {/* SIDEBAR */}
+                    <aside className="w-72 glass border-r border-white/5 hidden lg:flex flex-col sticky top-0 h-screen">
+                        <div className="p-8 text-2xl font-bold gradient-text">Mega File</div>
+                        <nav className="flex-grow px-4 flex flex-col gap-2">
+                            <div className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-2 px-4">Menu chính</div>
+                            <button onClick={() => setAdminTab('files')} className={`flex items-center gap-4 px-4 py-3 rounded-xl transition-all ${adminTab === 'files' ? 'sidebar-active' : 'hover:bg-white/5'}`}>
+                                <Icon name="fa-solid fa-folder-open" /> <span>Kho tài liệu</span>
+                            </button>
+                            <button onClick={() => setAdminTab('upload')} className={`flex items-center gap-4 px-4 py-3 rounded-xl transition-all ${adminTab === 'upload' ? 'sidebar-active' : 'hover:bg-white/5'}`}>
+                                <Icon name="fa-solid fa-cloud-arrow-up" /> <span>Quản lý File</span>
+                            </button>
+                            {user.role === 'admin' && (
+                                <>
+                                    <div className="text-xs font-bold text-slate-500 uppercase tracking-widest mt-6 mb-2 px-4">Quản trị viên</div>
+                                    <button onClick={() => setAdminTab('admin_panel')} className={`flex items-center gap-4 px-4 py-3 rounded-xl transition-all ${adminTab === 'admin_panel' ? 'sidebar-active' : 'hover:bg-white/5'}`}>
+                                        <Icon name="fa-solid fa-user-shield" /> <span>Quản trị hệ thống</span>
+                                    </button>
+                                </>
+                            )}
+                        </nav>
+                        <div className="p-6 border-t border-white/5">
+                            <div className="flex items-center gap-4 mb-6 px-2">
+                                <div className="w-10 h-10 rounded-full bg-blue-500/20 flex items-center justify-center text-blue-400 font-bold">{(user.username || 'U')[0].toUpperCase()}</div>
+                                <div className="flex flex-col">
+                                    <span className="font-bold text-sm truncate w-32">{user.username}</span>
+                                    <span className="text-xs text-slate-500 uppercase">{user.role}</span>
+                                </div>
+                            </div>
+                            <button onClick={logout} className="w-full py-3 rounded-xl bg-red-500/10 text-red-400 hover:bg-red-500 hover:text-white transition-all font-bold flex items-center justify-center gap-3">
+                                <Icon name="fa-solid fa-right-from-bracket" /> Đăng xuất
+                            </button>
+                        </div>
+                    </aside>
+
+                    {/* MAIN CONTENT */}
+                    <main className="flex-grow p-6 lg:p-10 overflow-y-auto">
+                        <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-10">
+                            <div>
+                                <h1 className="text-3xl font-bold mb-2">
+                                    {adminTab === 'admin_panel' && 'Bảng điều khiển quản trị'}
+                                    {adminTab === 'upload' && 'Quản lý tài liệu'}
+
+                                </h1>
+                                <p className="text-slate-400">Chào mừng trở lại, hệ thống đang hoạt động ổn định.</p>
+                            </div>
+                            <div className="flex gap-4 w-full md:w-auto">
+                                <div className="relative flex-grow md:flex-grow-0">
+
+                                    <input
+                                        type="text"
+                                        placeholder="Tìm kiếm File của Users"
+                                        className="w-full px-5 py-3.5 md:py-4 text-base font-medium rounded-xl md:rounded-2xl"
+                                        value={searchQuery}
+                                        onChange={(e) => setSearchQuery(e.target.value)}
+                                    />
+                                </div>
+                                {adminTab === 'upload' || user.role === 'admin' ? (
+                                    <button onClick={() => setView('landing')} className="glass px-6 py-3 rounded-xl font-bold flex items-center gap-2 whitespace-nowrap hover:bg-white/10 transition-all">
+                                        <Icon name="fa-solid fa-house" /> Về trang chủ
+                                    </button>
+                                ) : (
+                                    <button onClick={() => setView('landing')} className="glass px-6 py-3 rounded-xl font-bold flex items-center gap-2 whitespace-nowrap hover:bg-white/10 transition-all">
+                                        <Icon name="fa-solid fa-house" /> Về trang chủ
+                                    </button>
+                                )}
+                            </div>
+                        </header>
+
+                        <AnimatePresence mode="wait">
+                            {adminTab === 'files' && (
+                                <motion.div key="files" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                                    {filteredFiles.filter(f => f.status === 'approved').map(file => (
+                                        <div key={file.id} className="glass p-6 rounded-3xl hover:border-blue-500/50 transition-all group">
+                                            <div className="flex justify-between items-start mb-6">
+                                                <div className="w-14 h-14 bg-blue-500/10 rounded-2xl flex items-center justify-center text-blue-400 text-2xl"><Icon name="fa-solid fa-file-lines" /></div>
+                                                <div className="text-right">
+                                                    <div className="text-xs text-slate-500 font-bold uppercase mb-1">Lượt tải</div>
+                                                    <div className="font-bold text-lg">{file.download_count}</div>
+                                                </div>
+                                            </div>
+                                            <h3 className="text-xl font-bold mb-2 truncate">{file.filename}</h3>
+                                            <p className="text-slate-400 text-sm mb-6 line-clamp-2 h-10">{file.note || 'Không có ghi chú'}</p>
+                                            <div className="flex items-center gap-3 mb-6">
+                                                <div className="w-6 h-6 rounded-full bg-slate-700 flex items-center justify-center text-[10px] font-bold">{(file.uploader || 'U')[0].toUpperCase()}</div>
+                                                <span className="text-xs text-slate-400">Đăng bởi <span className="text-slate-200 font-medium">{file.uploader}</span></span>
+                                            </div>
+                                            <button onClick={() => handleDownload(file)} className="w-full py-3 glass rounded-xl font-bold hover:bg-blue-600 hover:text-white transition-all flex items-center justify-center gap-3">
+                                                <Icon name={file.download_key ? "fa-solid fa-lock" : "fa-solid fa-download"} />
+                                                {file.download_key ? 'Nhập Key download' : 'Tải xuống'}
+                                            </button>
+                                        </div>
+                                    ))}
+                                </motion.div>
+                            )}
+
+                            {adminTab === 'upload' && (
+                                <div className="flex flex-col gap-10">
+                                    <motion.div key="upload" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="max-w-3xl mx-auto w-full glass p-6 sm:p-8 md:p-10 rounded-3xl shadow-2xl">
+                                        <h2 className="text-2xl md:text-3xl font-bold mb-6 md:mb-8 flex items-center gap-3 md:gap-4 text-white">
+                                            <div className="w-10 h-10 md:w-12 md:h-12 bg-blue-500/20 rounded-xl md:rounded-2xl flex items-center justify-center text-blue-400 text-lg md:text-xl">
+                                                <Icon name={editingFile ? "fa-solid fa-pen-to-square" : "fa-solid fa-cloud-arrow-up"} />
+                                            </div>
+                                            {editingFile ? 'Chỉnh sửa File' : 'Tải lên File'}
+                                        </h2>
+                                        <form onSubmit={handleUpload} className="flex flex-col gap-5 md:gap-6">
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-5 md:gap-6">
+                                                <div className="flex flex-col gap-2">
+                                                    <label className="text-xs md:text-sm font-bold text-slate-300 ml-1 uppercase tracking-widest">Tên File</label>
+                                                    <input name="filename" required defaultValue={editingFile?.filename || ''} placeholder="Ví dụ: Giáo trình Giải tích 1..." className="w-full px-5 py-3.5 md:py-4 text-base font-medium rounded-xl md:rounded-2xl" />
+                                                </div>
+                                                <div className="flex flex-col gap-2">
+                                                    <label className="text-xs md:text-sm font-bold text-slate-300 ml-1 uppercase tracking-widest">Key bảo vệ (Tùy chọn)</label>
+                                                    <input name="download_key" defaultValue={editingFile?.download_key || ''} placeholder="Để trống nếu không cần" className="w-full px-5 py-3.5 md:py-4 text-base font-medium rounded-xl md:rounded-2xl" />
+                                                </div>
+                                            </div>
+                                            <div className="flex flex-col gap-2">
+                                                <label className="text-xs md:text-sm font-bold text-slate-300 ml-1 uppercase tracking-widest">Link File (Drive, Dropbox...)</label>
+                                                <input name="file_url" type="url" required defaultValue={editingFile?.file_url || ''} placeholder="https://drive.google.com/file/d/..." className="w-full px-5 py-3.5 md:py-4 text-base font-medium rounded-xl md:rounded-2xl" />
+                                            </div>
+                                            <div className="flex flex-col gap-2">
+                                                <label className="text-xs md:text-sm font-bold text-slate-300 ml-1 uppercase tracking-widest">Ghi chú kèm theo</label>
+                                                <textarea name="note" rows="3" defaultValue={editingFile?.note || ''} placeholder="Mô tả ngắn gọn về nội dung file này..." className="w-full px-5 py-3.5 md:py-4 text-base font-medium rounded-xl md:rounded-2xl resize-none"></textarea>
+                                            </div>
+                                            <div className="flex flex-col sm:flex-row gap-3 md:gap-4 mt-2 md:mt-4">
+                                                <button type="submit" className="btn-primary flex-grow py-3.5 md:py-4 rounded-xl font-bold text-base md:text-lg shadow-xl shadow-blue-500/20 order-1 sm:order-none">
+                                                    {editingFile ? 'Cập nhật' : 'Đăng File'}
+                                                </button>
+                                                {editingFile ? (
+                                                    <button type="button" onClick={() => setEditingFile(null)} className="w-full sm:w-auto px-6 md:px-8 py-3.5 md:py-4 bg-slate-700 hover:bg-slate-600 rounded-xl font-bold text-base md:text-lg transition-all order-2 sm:order-none">Hủy sửa</button>
+                                                ) : (
+                                                    <button type="button" onClick={() => setAdminTab('files')} className="w-full sm:w-auto px-6 md:px-8 py-3.5 md:py-4 glass rounded-xl font-bold text-base md:text-lg hover:bg-white/5 transition-all order-2 sm:order-none">Hủy bỏ</button>
+                                                )}
+                                            </div>
+                                        </form>
+                                    </motion.div>
+                                    {/* PHẦN THỐNG KÊ FILE CỦA USER */}
+                                    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="glass rounded-3xl overflow-hidden shadow-xl">
+                                        <div className="p-6 border-b border-white/5 bg-white/5 flex justify-between items-center">
+                                            <h3 className="text-xl font-bold flex items-center gap-3">
+                                                <Icon name="fa-solid fa-chart-pie" className="text-blue-400" />
+                                                Danh sách File đã đăng
+                                            </h3>
+                                            <span className="text-xs font-bold text-slate-500 uppercase">Tổng cộng: {files.filter(f => f.uploader === user.username).length} file</span>
+                                        </div>
+                                        <div className="overflow-x-auto">
+                                            <table className="w-full text-left border-collapse">
+                                                <thead className="bg-white/5 text-slate-400 text-xs uppercase tracking-widest">
+                                                    <tr>
+                                                        <th className="p-6">Tên tài liệu</th>
+                                                        <th className="p-6">Link tải</th>
+                                                        <th className="p-6">Key</th>
+                                                        <th className="p-6">Trạng thái</th>
+                                                        <th className="p-6 text-right">Thao tác</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody className="divide-y divide-white/5">
+                                                    {files.filter(f => f.uploader === user.username).map(file => (
+                                                        <tr key={file.id} className="hover:bg-white/5 transition-colors group">
+                                                            <td className="p-6">
+                                                                <div className="font-bold text-slate-200">{file.filename}</div>
+                                                                <div className="text-[10px] text-slate-500 mt-1">
+                                                                    {String(file.created_at).includes('/') ? file.created_at : new Date(file.created_at).toLocaleDateString('vi-VN')}
+                                                                </div>
+                                                            </td>
+                                                            <td className="p-6">
+                                                                <button onClick={() => window.open(file.file_url, '_blank')} className="text-blue-400 hover:text-blue-300 flex items-center gap-2 text-sm font-medium">
+                                                                    <Icon name="fa-solid fa-link" /> Xem link
+                                                                </button>
+                                                            </td>
+                                                            <td className="p-6">
+                                                                <span className="text-xs font-mono text-slate-400 bg-slate-800 px-2 py-1 rounded border border-white/5">
+                                                                    {file.download_key || 'Không có'}
+                                                                </span>
+                                                            </td>
+                                                            <td className="p-6">
+                                                                <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-tighter ${file.status === 'approved' ? 'bg-emerald-500/20 text-emerald-400' :
+                                                                        file.status === 'rejected' ? 'bg-red-500/20 text-red-400' :
+                                                                            'bg-amber-500/20 text-amber-400'
+                                                                    }`}>
+                                                                    {file.status === 'approved' ? 'Đã duyệt' : file.status === 'rejected' ? 'Từ chối' : 'Chờ duyệt'}
+                                                                </span>
+                                                            </td>
+                                                            <td className="p-6 text-right">
+                                                                {file.status === 'pending' ? (
+                                                                    <button
+                                                                        onClick={() => {
+                                                                            setEditingFile(file);
+                                                                            window.scrollTo({ top: 0, behavior: 'smooth' });
+                                                                        }}
+                                                                        className="p-2.5 bg-blue-500/10 text-blue-400 hover:bg-blue-500 hover:text-white rounded-xl transition-all"
+                                                                        title="Chỉnh sửa"
+                                                                    >
+                                                                        <Icon name="fa-solid fa-pen-to-square" />
+                                                                    </button>
+                                                                ) : (
+                                                                    <button disabled className="p-2.5 bg-slate-800 text-slate-600 rounded-xl cursor-not-allowed" title="Không thể chỉnh sửa file đã duyệt">
+                                                                        <Icon name="fa-solid fa-lock" />
+                                                                    </button>
+                                                                )}
+                                                            </td>
+                                                        </tr>
+                                                    ))}
+                                                    {files.filter(f => f.uploader === user.username).length === 0 && (
+                                                        <tr>
+                                                            <td colSpan="5" className="p-20 text-center">
+                                                                <div className="flex flex-col items-center gap-4 opacity-30">
+                                                                    <Icon name="fa-solid fa-folder-open text-6xl" />
+                                                                    <p className="text-lg font-medium">Bạn chưa tải lên tài liệu nào</p>
+                                                                </div>
+                                                            </td>
+                                                        </tr>
+                                                    )}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </motion.div>
+                                </div>
+                            )}
+
+                            {adminTab === 'admin_panel' && (
+                                <motion.div key="admin_panel" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex flex-col gap-16">
+                                    {/* 1. THỐNG KÊ */}
+                                    <section>
+                                        <h2 className="text-2xl font-bold mb-6 flex items-center gap-3"><Icon name="fa-solid fa-chart-line text-blue-400" /> Thống kê hệ thống</h2>
+                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+                                            <div className="glass p-8 rounded-3xl flex flex-col gap-2">
+                                                <div className="w-12 h-12 rounded-2xl bg-blue-500/20 flex items-center justify-center text-blue-400 mb-2"><Icon name="fa-solid fa-file-lines" /></div>
+                                                <span className="text-slate-400 text-sm font-bold uppercase tracking-widest">Tổng tài liệu</span>
+                                                <span className="text-4xl font-black">{files.length}</span>
+                                            </div>
+                                            <div className="glass p-8 rounded-3xl flex flex-col gap-2">
+                                                <div className="w-12 h-12 rounded-2xl bg-emerald-500/20 flex items-center justify-center text-emerald-400 mb-2"><Icon name="fa-solid fa-users" /></div>
+                                                <span className="text-slate-400 text-sm font-bold uppercase tracking-widest">Người dùng</span>
+                                                <span className="text-4xl font-black">{users.length}</span>
+                                            </div>
+                                            <div className="glass p-8 rounded-3xl flex flex-col gap-2">
+                                                <div className="w-12 h-12 rounded-2xl bg-purple-500/20 flex items-center justify-center text-purple-400 mb-2"><Icon name="fa-solid fa-download" /></div>
+                                                <span className="text-slate-400 text-sm font-bold uppercase tracking-widest">Lượt tải về</span>
+                                                <span className="text-4xl font-black">{files.reduce((acc, f) => acc + (f.download_count || 0), 0)}</span>
+                                            </div>
+                                            <div className="glass p-8 rounded-3xl flex flex-col gap-2">
+                                                <div className="w-12 h-12 rounded-2xl bg-amber-500/20 flex items-center justify-center text-amber-400 mb-2"><Icon name="fa-solid fa-clock-rotate-left" /></div>
+                                                <span className="text-slate-400 text-sm font-bold uppercase tracking-widest">Chờ phê duyệt</span>
+                                                <span className="text-4xl font-black text-amber-400">{files.filter(f => f.status === 'pending').length}</span>
+                                            </div>
+                                        </div>
+                                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
+                                            <div className="glass rounded-3xl overflow-hidden">
+                                                <div className="p-6 border-b border-white/5 bg-white/5 font-bold flex items-center gap-3"><Icon name="fa-solid fa-trophy text-amber-400" /> Top người đóng góp</div>
+                                                <div className="p-6">
+                                                    <div className="flex flex-col gap-4">
+                                                        {users.map(u => ({ username: u.username, count: files.filter(f => f.uploader === u.username).length }))
+                                                            .sort((a, b) => b.count - a.count).slice(0, 3).map((u, i) => (
+                                                                <div key={u.username} className="flex items-center justify-between p-4 glass rounded-2xl">
+                                                                    <div className="flex items-center gap-4">
+                                                                        <span className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center font-bold text-slate-500">{i + 1}</span>
+                                                                        <span className="font-bold">{u.username}</span>
+                                                                    </div>
+                                                                    <span className="px-3 py-1 bg-blue-500/20 text-blue-400 rounded-lg font-bold text-xs">{u.count} File</span>
+                                                                </div>
+                                                            ))}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div className="glass rounded-3xl overflow-hidden">
+                                                <div className="p-6 border-b border-white/5 bg-white/5 font-bold flex items-center gap-3"><Icon name="fa-solid fa-fire text-red-400" /> Tài liệu hot nhất</div>
+                                                <div className="p-6">
+                                                    <div className="flex flex-col gap-4">
+                                                        {[...files].sort((a, b) => (b.download_count || 0) - (a.download_count || 0)).slice(0, 3).map((f, i) => (
+                                                            <div key={f.id} className="flex items-center justify-between p-4 glass rounded-2xl">
+                                                                <div className="flex items-center gap-4 overflow-hidden">
+                                                                    <span className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center font-bold text-slate-500 flex-shrink-0">{i + 1}</span>
+                                                                    <span className="font-bold truncate">{f.filename}</span>
+                                                                </div>
+                                                                <span className="px-3 py-1 bg-purple-500/20 text-purple-400 rounded-lg font-bold text-xs flex-shrink-0">{f.download_count || 0} tải</span>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </section>
+
+                                    {/* 2. PHÊ DUYỆT FILE */}
+                                    {files.filter(f => f.status === 'pending').length > 0 && (
+                                        <section>
+                                            <h2 className="text-2xl font-bold mb-6 flex items-center gap-3"><Icon name="fa-solid fa-check-to-slot text-amber-400" /> Yêu cầu phê duyệt</h2>
+                                            <div className="glass rounded-3xl overflow-hidden">
+                                                <table className="w-full text-left border-collapse">
+                                                    <thead className="bg-white/5 text-slate-400 text-sm uppercase">
+                                                        <tr>
+                                                            <th className="p-6">Tên File</th>
+                                                            <th className="p-6">Người đăng</th>
+                                                            <th className="p-6">Ngày đăng</th>
+                                                            <th className="p-6 text-right">Thao tác</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody className="divide-y divide-white/5">
+                                                        {files.filter(f => f.status === 'pending').map(file => (
+                                                            <tr key={file.id} className="hover:bg-white/5 transition-colors">
+                                                                <td className="p-6 font-bold">{file.filename}</td>
+                                                                <td className="p-6 text-slate-400">{file.uploader}</td>
+                                                                <td className="p-6 text-slate-400">{String(file.created_at).includes('/') ? file.created_at : new Date(file.created_at).toLocaleDateString('vi-VN')}</td>
+                                                                <td className="p-6 text-right flex justify-end gap-3">
+                                                                    <button onClick={() => handleAction('approveFile', file.id)} className="w-10 h-10 rounded-lg bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500 hover:text-white transition-all"><Icon name="fa-solid fa-check" /></button>
+                                                                    <button onClick={() => handleAction('rejectFile', file.id)} className="w-10 h-10 rounded-lg bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white transition-all"><Icon name="fa-solid fa-xmark" /></button>
+                                                                    <button onClick={() => window.open(file.file_url, '_blank')} className="w-10 h-10 rounded-lg bg-blue-500/10 text-blue-500 hover:bg-blue-500 hover:text-white transition-all"><Icon name="fa-solid fa-eye" /></button>
+                                                                </td>
+                                                            </tr>
+                                                        ))}
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </section>
+                                    )}
+
+                                    {/* 3. QUẢN LÝ USER */}
+                                    <section>
+                                        <h2 className="text-2xl font-bold mb-6 flex items-center gap-3"><Icon name="fa-solid fa-users-gear text-emerald-400" /> Quản lý người dùng</h2>
+                                        <div className="glass rounded-3xl overflow-hidden shadow-xl">
+                                            <table className="w-full text-left border-collapse">
+                                                <thead className="bg-white/5 text-slate-400 text-xs uppercase tracking-widest">
+                                                    <tr>
+                                                        <th className="p-6 w-16">STT</th>
+                                                        <th className="p-6">Tài khoản</th>
+                                                        <th className="p-6">Số File đăng</th>
+                                                        <th className="p-6">Cấp độ</th>
+                                                        <th className="p-6">Trạng thái</th>
+                                                        <th className="p-6 text-right">Thao tác</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody className="divide-y divide-white/5">
+                                                    {users.map((u, index) => (
+                                                        <tr key={u.id} className="hover:bg-white/5 transition-colors">
+                                                            <td className="p-6 text-slate-500 font-mono text-xs">{index + 1}</td>
+                                                            <td className="p-6 font-bold text-slate-200">{u.username}</td>
+                                                            <td className="p-6"><span className="px-3 py-1 bg-slate-800 rounded-lg text-blue-400 font-bold text-xs">{files.filter(f => f.uploader === u.username).length} File</span></td>
+                                                            <td className="p-6"><span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-tighter ${u.role === 'admin' ? 'bg-purple-500/20 text-purple-400' : 'bg-blue-500/20 text-blue-400'}`}>{u.role === 'admin' ? 'Quản trị viên' : 'Thành viên'}</span></td>
+                                                            <td className="p-6"><span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-tighter ${u.status === 'active' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-red-500/20 text-red-400'}`}>{u.status === 'active' ? 'Hoạt động' : 'Bị khóa'}</span></td>
+                                                            <td className="p-6 text-right">
+                                                                {u.username !== user.username && (
+                                                                    <button onClick={() => handleAction('banUser', u.id, { status: u.status === 'active' ? 'banned' : 'active' })} className={`px-4 py-2 rounded-xl font-bold text-xs transition-all ${u.status === 'active' ? 'bg-red-500/10 text-red-400 hover:bg-red-500 hover:text-white' : 'bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500 hover:text-white'}`}>{u.status === 'active' ? 'Khóa tài khoản' : 'Mở khóa'}</button>
+                                                                )}
+                                                            </td>
+                                                        </tr>
+                                                    ))}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </section>
+
+                                    {/* 4. TOÀN BỘ FILE */}
+                                    <section>
+                                        <h2 className="text-2xl font-bold mb-6 flex items-center gap-3"><Icon name="fa-solid fa-list-check text-blue-400" /> Danh sách File hệ thống</h2>
+                                        <div className="glass rounded-3xl overflow-hidden shadow-xl">
+                                            <div className="overflow-x-auto">
+                                                <table className="w-full text-left border-collapse">
+                                                    <thead className="bg-white/5 text-slate-400 text-xs uppercase tracking-widest">
+                                                        <tr>
+                                                            <th className="p-6">Tên File</th>
+                                                            <th className="p-6">Người đăng</th>
+                                                            <th className="p-6">Link</th>
+                                                            <th className="p-6">Key</th>
+                                                            <th className="p-6">Trạng thái</th>
+                                                            <th className="p-6 text-right">Thao tác</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody className="divide-y divide-white/5">
+                                                        {filteredFiles.map(file => (
+                                                            <tr key={file.id} className="hover:bg-white/5 transition-colors group">
+                                                                <td className="p-6"><div className="font-bold text-slate-200">{file.filename}</div><div className="text-[10px] text-slate-500 mt-1">{file.id}</div></td>
+                                                                <td className="p-6 text-slate-400 text-sm">{file.uploader}</td>
+                                                                <td className="p-6"><button onClick={() => window.open(file.file_url, '_blank')} className="text-blue-400 hover:text-blue-300 flex items-center gap-2 text-sm font-medium"><Icon name="fa-solid fa-link" /> Xem</button></td>
+                                                                <td className="p-6"><span className="text-xs font-mono text-slate-400 bg-slate-800 px-2 py-1 rounded border border-white/5">{file.download_key || 'Không'}</span></td>
+                                                                <td className="p-6"><span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-tighter ${file.status === 'approved' ? 'bg-emerald-500/20 text-emerald-400' : file.status === 'rejected' ? 'bg-red-500/20 text-red-400' : 'bg-amber-500/20 text-amber-400'}`}>{file.status === 'approved' ? 'Đã duyệt' : file.status === 'rejected' ? 'Từ chối' : 'Chờ duyệt'}</span></td>
+                                                                <td className="p-6 text-right flex justify-end gap-2">
+                                                                    <button onClick={() => { setEditingFile(file); setAdminTab('upload'); window.scrollTo({ top: 0, behavior: 'smooth' }); }} className="p-2 bg-blue-500/10 text-blue-400 hover:bg-blue-500 hover:text-white rounded-lg transition-all" title="Sửa"><Icon name="fa-solid fa-pen" /></button>
+                                                                    <button onClick={() => handleAction(file.status === 'approved' ? 'rejectFile' : 'approveFile', file.id)} className={`p-2 rounded-lg transition-all ${file.status === 'approved' ? 'bg-red-500/10 text-red-400 hover:bg-red-500 hover:text-white' : 'bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500 hover:text-white'}`} title={file.status === 'approved' ? 'Hủy duyệt' : 'Duyệt'}><Icon name={file.status === 'approved' ? "fa-solid fa-xmark" : "fa-solid fa-check"} /></button>
+                                                                </td>
+                                                            </tr>
+                                                        ))}
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </section>
+
+                                    {/* 5. QUẢN LÝ FAQ */}
+                                    <section hidden>
+                                        <h2 className="text-2xl font-bold mb-6 flex items-center gap-3"><Icon name="fa-solid fa-circle-question text-purple-400" /> Quản lý FAQ</h2>
+                                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
+                                            <div className="glass p-8 rounded-3xl h-fit">
+                                                <h3 className="text-xl font-bold mb-6 flex items-center gap-3">{editingFaq ? 'Sửa câu hỏi' : 'Thêm câu hỏi mới'}</h3>
+                                                <form onSubmit={(e) => {
+                                                    e.preventDefault();
+                                                    const question = e.target.question.value;
+                                                    const answer = e.target.answer.value;
+                                                    if (!question || !answer) return notify("Vui lòng nhập đầy đủ!", "error");
+                                                    handleAction(editingFaq ? 'updateFaq' : 'addFaq', editingFaq?.id, { question, answer });
+                                                    e.target.reset();
+                                                    setEditingFaq(null);
+                                                    notify("Đã lưu câu hỏi thành công!");
+                                                }} className="flex flex-col gap-6">
+                                                    <div className="flex flex-col gap-2"><label className="text-sm font-medium text-slate-400">Câu hỏi</label><input name="question" defaultValue={editingFaq?.question || ''} className="w-full" /></div>
+                                                    <div className="flex flex-col gap-2"><label className="text-sm font-medium text-slate-400">Câu trả lời</label><textarea name="answer" rows="4" defaultValue={editingFaq?.answer || ''}></textarea></div>
+                                                    <div className="flex gap-4">
+                                                        <button type="submit" className="btn-primary flex-grow py-3 rounded-xl font-bold">{editingFaq ? 'Cập nhật' : 'Thêm mới'}</button>
+                                                        {editingFaq && <button type="button" onClick={() => setEditingFaq(null)} className="px-6 py-3 glass rounded-xl font-bold text-sm">Hủy</button>}
+                                                    </div>
+                                                </form>
+                                            </div>
+                                            <div className="lg:col-span-2 flex flex-col gap-4">
+                                                {faqs.map(faq => (
+                                                    <div key={faq.id} className="p-6 glass rounded-2xl flex flex-col gap-4">
+                                                        <div className="flex justify-between items-start gap-4">
+                                                            <div className="font-bold text-blue-400">Q: {faq.question}</div>
+                                                            <div className="flex gap-2">
+                                                                <button onClick={() => setEditingFaq(faq)} className="p-2 bg-blue-500/10 text-blue-400 hover:bg-blue-500 hover:text-white rounded-lg transition-all"><Icon name="fa-solid fa-pen" /></button>
+                                                                <button onClick={() => handleAction('deleteFaq', faq.id)} className="p-2 bg-red-500/10 text-red-400 hover:bg-red-500 hover:text-white rounded-lg transition-all"><Icon name="fa-solid fa-trash" /></button>
+                                                            </div>
+                                                        </div>
+                                                        <div className="text-slate-400 text-sm">A: {faq.answer}</div>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    </section>
+
+                                    {/* 6. CÀI ĐẶT HỆ THỐNG */}
+                                    <section hidden>
+                                        <h2 className="text-2xl font-bold mb-6 flex items-center gap-3"><Icon name="fa-solid fa-sliders text-slate-400" /> Cài đặt hệ thống</h2>
+                                        <div className="glass p-10 rounded-3xl max-w-2xl">
+                                            <h3 className="text-xl font-bold mb-8 flex items-center gap-3"><Icon name="fa-solid fa-bullhorn text-blue-400" /> Thông báo Popup toàn web</h3>
+                                            <form onSubmit={(e) => {
+                                                e.preventDefault();
+                                                handleAction('updateAnnouncement', null, { text: e.target.announcement.value, enabled: e.target.enabled.checked });
+                                                notify("Đã cập nhật cấu hình hệ thống!");
+                                            }} className="flex flex-col gap-6">
+                                                <div className="flex flex-col gap-2"><label className="text-sm font-medium text-slate-400">Nội dung thông báo</label><textarea name="announcement" rows="4" defaultValue={settings.announcement}></textarea></div>
+                                                <div className="flex items-center gap-4 p-4 glass rounded-xl"><input type="checkbox" name="enabled" id="enabled" defaultChecked={settings.announcement_enabled === 'true'} className="w-5 h-5" /><label htmlFor="enabled" className="font-bold cursor-pointer">Kích hoạt thông báo Popup</label></div>
+                                                <button type="submit" className="btn-primary py-4 rounded-xl font-bold">Lưu cấu hình</button>
+                                            </form>
+                                        </div>
+                                    </section>
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
                     </main>
-                    {renderLoginPopup()}
-                    {renderSpamPopup()}
+
+                    {/* ANNOUNCEMENT MODAL */}
+                    <Modal
+                        isOpen={showAnnouncement && settings.announcement_enabled === 'true'}
+                        onClose={() => setShowAnnouncement(false)}
+                        title="Thông báo hệ thống"
+                    >
+                        <div className="flex flex-col gap-6">
+                            <div className="p-4 bg-blue-500/10 border border-blue-500/20 rounded-xl text-blue-200 leading-relaxed">
+                                {settings.announcement}
+                            </div>
+                            <div className="flex gap-4">
+                                <button onClick={() => setShowAnnouncement(false)} className="flex-grow py-3 btn-primary rounded-xl font-bold">Đã hiểu</button>
+                                <button onClick={() => {
+                                    localStorage.setItem('announcement_dismissed', Date.now().toString());
+                                    setShowAnnouncement(false);
+                                }} className="px-6 py-3 glass rounded-xl text-sm font-medium">Không hiện lại trong 2h</button>
+                            </div>
+                        </div>
+                    </Modal>
+                    {renderDownloadModal()}
+                    {loading && <LoadingOverlay />}
                 </div>
             );
-        }
+        };
 
         const root = ReactDOM.createRoot(document.getElementById('root'));
         root.render(<App />);
     </script>
+    <!-- Popup Overlay -->
+    <div id="popup-overlay"
+        class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center hidden opacity-0 transition-opacity duration-300">
+        <!-- Popup Box -->
+        <div
+            class="glass border-2 border-green-500 p-8 rounded-2xl shadow-[0_0_30px_rgba(59,246,142,0.3)] w-full max-w-sm relative text-center">
+            <div class="text-center">
+                <div
+                    class="bg-green-500/20 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4 border border-green-500/50">
+                    <i class="fa-solid fa-bolt "></i>
+                </div>
+                <h2 class="text-2xl font-bold text-green-500 mb-2">Chào mừng bạn!</h2>
+                <p class="text-slate-300 mb-8">Đây là website lùa gà<br/> Vui lòng không nhấp tải xuống File.</p>
+
+                <button onclick="closePopup()"
+                    class="px-8 py-4 glass rounded-xl font-bold text-lg hover:bg-white/5 transform hover:-translate-y-1 transition-all">
+                    Né hộ
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const COOKIE_NAME = 'user_session_active';
+        const EXPIRE_SECONDS = 3000; 
+        const overlay = document.getElementById('popup-overlay');
+
+        function getCookie(name) {
+            let matches = document.cookie.match(new RegExp("(?:^|; )" + name.replace(/([\.$?*|{}\(\)\[\]\\\/\+^])/g, '\\$1') + "=([^;]*)"));
+            return matches ? decodeURIComponent(matches[1]) : undefined;
+        }
+
+        function setSessionCookie() {
+            const date = new Date();
+            date.setTime(date.getTime() + (EXPIRE_SECONDS * 1000));
+            document.cookie = `${COOKIE_NAME}=true; expires=${date.toUTCString()}; path=/`;
+        }
+
+        function closePopup() {
+            overlay.classList.add('opacity-0');
+            overlay.querySelector('div').classList.add('scale-95');
+            setTimeout(() => {
+                overlay.classList.add('hidden');
+                setSessionCookie(); 
+            }, 300);
+        }
+
+        window.addEventListener('load', () => {
+            if (!getCookie(COOKIE_NAME)) {
+                overlay.classList.remove('hidden');
+                setTimeout(() => {
+                    overlay.classList.remove('opacity-0');
+                    overlay.querySelector('div').classList.remove('scale-95');
+                }, 10);
+            } else {
+                setSessionCookie();
+            }
+        });
+
+        ['mousedown', 'mousemove', 'keypress', 'scroll', 'touchstart'].forEach(event => {
+            window.addEventListener(event, () => {
+                if (getCookie(COOKIE_NAME)) {
+                    setSessionCookie();
+                }
+            });
+        });
+    </script>
+
+
 </body>
+
 </html>
