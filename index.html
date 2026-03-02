@@ -402,12 +402,12 @@
                                 <Icon name="fa-solid fa-lock" />
                             </div>
                             <h3 className="text-xl font-bold text-white mb-2">Tài liệu được bảo mật</h3>
-                            <p className="text-slate-400 text-sm mb-6">Nhập Key để lấy Link <br /><strong className="text-white">{downloadModal.file?.filename}</strong></p>
+                            <p className="text-slate-400 text-sm mb-6">Nhập Key để lấy Link của File:<br /><strong className="text-white">{downloadModal.file?.filename}</strong></p>
                             <form onSubmit={submitDownloadKey} className="flex flex-col gap-4">
                                 {/* Dòng chữ đỏ báo lỗi sẽ hiện ở đây nếu nhập sai */}
                                 {keyError && (
                                     <p className="text-red-400 text-sm font-bold bg-red-500/10 p-3 rounded-lg border border-red-500/20 animate-pulse">
-                                        Key không chính xác, vui lòng thử lại!
+                                        Key không chính xác, vui lòng né hộ!
                                     </p>
                                 )}
 
