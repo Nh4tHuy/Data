@@ -611,8 +611,17 @@
                                     <p className="text-slate-400 max-w-2xl mx-auto">Danh sách các tài liệu tà đạo mới nhất được cộng đồng chia sẻ.</p>
                                 </div>
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                                    {files.filter(f => f.status === 'approved').slice(0, 9).map(file => (
-                                        <div key={file.id} className="glass p-8 rounded-3xl border border-slate-700 hover:border-blue-500/50 transition-all group flex flex-col h-full">
+                                   {files
+    .filter(f => f.status === 'approved')
+    .sort((a, b) => {
+        // Lấy thời gian từ ID của file (loại bỏ chữ cái, chỉ giữ số)
+        const timeA = parseInt(String(a.id).replace(/\D/g, '')) || 0;
+        const timeB = parseInt(String(b.id).replace(/\D/g, '')) || 0;
+        // Sắp xếp giảm dần để file mới tạo (thời gian lớn hơn) được đẩy lên đầu
+        return timeB - timeA; 
+    })
+    .map(file => (
+    <div key={file.id} className="glass p-8 rounded-3xl border border-slate-700 hover:border-blue-500/50 transition-all group flex flex-col h-full">
                                             <div className="flex justify-between items-start mb-6">
                                                 <div className="w-14 h-14 bg-blue-500/10 rounded-2xl flex items-center justify-center text-blue-400 text-2xl group-hover:bg-blue-600 group-hover:text-white transition-all"><Icon name="fa-solid fa-file-lines" /></div>
                                                 <div className="text-right">
