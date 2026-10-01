@@ -113,7 +113,6 @@
             background-color: rgba(66, 133, 244, 0.12);
         }
 
-        /* Smooth card entrance animation */
         @keyframes cardFadeIn {
             from { opacity: 0; transform: translateY(8px); }
             to { opacity: 1; transform: translateY(0); }
@@ -123,7 +122,6 @@
             will-change: transform, opacity;
         }
 
-        /* Glass Skeleton Shimmer */
         @keyframes shimmerPulse {
             0%, 100% { opacity: 0.45; }
             50% { opacity: 0.9; }
@@ -178,7 +176,6 @@
             100% { transform: translate3d(0, -1150px, 0) rotate(420deg); opacity: 0; }
         }
 
-        /* Ambient Glow Orbs */
         @keyframes floatOrb {
             0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
             50% { transform: translate3d(25px, -30px, 0) scale(1.06); }
@@ -188,7 +185,6 @@
             animation: floatOrb 20s ease-in-out infinite alternate;
         }
 
-        /* Search Highlight Tag */
         mark.search-highlight {
             background-color: #fef08a;
             color: #854d0e;
@@ -201,7 +197,6 @@
             color: #fef08a;
         }
 
-        /* Custom Scrollbar */
         ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: rgba(66, 133, 244, 0.3); border-radius: 99px; }
@@ -227,7 +222,6 @@
             overflow: hidden;
         }
 
-        /* Toast Message */
         #toastContainer {
             position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
             z-index: 100; pointer-events: none; display: flex; flex-direction: column; align-items: center; gap: 8px;
@@ -244,19 +238,16 @@
 </head>
 <body class="antialiased min-h-screen bg-gradient-to-br from-[#f2f7ff] via-[#edf4fd] to-[#e4eefc] dark:from-[#07111e] dark:via-[#0a182b] dark:to-[#091f38] text-slate-800 dark:text-slate-100 flex flex-col font-sans relative overflow-x-hidden selection:bg-pastel-200 selection:text-pastel-900">
 
-    <!-- Ambient glowing orbs & particles -->
     <div class="fixed inset-0 pointer-events-none overflow-hidden z-0" aria-hidden="true">
         <div class="orb-ambient w-96 h-96 -top-24 -left-20 bg-blue-300/30 dark:bg-blue-900/20"></div>
         <div class="orb-ambient w-[420px] h-[420px] top-1/3 -right-28 bg-indigo-200/30 dark:bg-indigo-950/25" style="animation-delay: -7s;"></div>
         <div class="orb-ambient w-[460px] h-[460px] -bottom-32 left-1/4 bg-sky-200/30 dark:bg-blue-950/25" style="animation-delay: -12s;"></div>
     </div>
 
-    <!-- Floating shapes rising gently -->
     <ul class="floating-shapes" aria-hidden="true">
         <li></li><li></li><li></li><li></li><li></li><li></li>
     </ul>
 
-    <!-- Toast container -->
     <div id="toastContainer"></div>
 
     <div class="relative z-10 flex flex-col flex-1 h-full w-full">
@@ -271,14 +262,14 @@
                         <h1 class="font-extrabold text-xl text-slate-900 dark:text-white leading-tight tracking-tight">Wiky TUD</h1>
                         <span class="px-2 py-0.5 rounded-full text-[10px] font-bold tracking-wide uppercase bg-pastel-100 dark:bg-pastel-900/60 text-pastel-700 dark:text-pastel-300 border border-pastel-200 dark:border-pastel-700/50">Drive</span>
                     </div>
-                    <p class="text-xs text-slate-500 dark:text-slate-400 font-medium">Kho tài liệu tà đạo</p>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 font-medium">Kho tài liệu & tiện ích</p>
                 </div>
             </div>
 
             <!-- Right Controls -->
             <div class="flex items-center gap-2.5">
                 
-                <!-- BỘ CHUYỂN ĐỔI 2 CHẾ ĐỘ HIỂN THỊ (ƯU TIÊN BẢNG LÊN TRƯỚC) -->
+                <!-- BỘ CHUYỂN ĐỔI CHẾ ĐỘ HIỂN THỊ -->
                 <div class="flex items-center glass-pill p-1 rounded-2xl shadow-glass-sm border border-white/70 dark:border-pastel-400/20">
                     <button id="viewBtnTable" onclick="switchViewMode('table')" title="Hiển thị dạng Bảng chi tiết" 
                             class="h-9 px-3 rounded-xl flex items-center gap-1.5 text-xs sm:text-sm font-bold bg-pastel-500 text-white shadow-sm transition-all">
@@ -292,8 +283,16 @@
                     </button>
                 </div>
 
+                <!-- Nút Tiện Ích Nhanh nổi bật trên Navbar -->
+                <button onclick="openToolsModal()" title="Mở danh sách tiện ích nhanh" 
+                        class="h-10 px-3.5 rounded-2xl bg-gradient-to-r from-pastel-500 to-indigo-500 hover:from-pastel-600 hover:to-indigo-600 text-white flex items-center gap-2 text-xs sm:text-sm font-bold shadow-glass-sm shadow-pastel-500/20 transition-all hover:scale-105 active:scale-95">
+                    <i class="ph-bold ph-lightning text-amber-300 text-base"></i>
+                    <span>Tiện ích</span>
+                    <span id="navToolsBadge" class="hidden sm:inline-flex px-1.5 py-0.2 text-[10px] rounded-full bg-white/25">0</span>
+                </button>
+
                 <!-- Info Button -->
-                <button onclick="openWelcomeModal(true)" title="Thông tin người dùng & Tin nhắn admin" class="w-11 h-11 rounded-2xl glass-panel flex items-center justify-center text-slate-600 dark:text-pastel-200 hover:text-pastel-600 dark:hover:text-white transition-all shadow-glass-sm hover:scale-105 active:scale-95">
+                <button onclick="openWelcomeModal(true)" title="Thông báo hệ thống" class="w-11 h-11 rounded-2xl glass-panel flex items-center justify-center text-slate-600 dark:text-pastel-200 hover:text-pastel-600 dark:hover:text-white transition-all shadow-glass-sm hover:scale-105 active:scale-95">
                     <i class="ph-bold ph-info text-xl text-pastel-500"></i>
                 </button>
 
@@ -313,30 +312,29 @@
 
         <main class="flex-1 flex flex-col max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
             
-            <!-- Hero Banner Header -->
             <div class="mb-8 p-6 sm:p-8 rounded-3xl glass-panel shadow-glass-md flex flex-col md:flex-row md:items-center justify-between gap-6 relative overflow-hidden">
                 <div class="absolute -right-10 -bottom-10 w-44 h-44 rounded-full bg-pastel-400/15 blur-2xl pointer-events-none"></div>
 
                 <div class="relative z-10 max-w-2xl">
-                    
                     <h2 class="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-slate-900 dark:text-white tracking-tight leading-snug">
                         KHO TÀI LIỆU <span class="text-pastel-500">TÀ ĐẠO</span>
                     </h2>
                     <p class="text-slate-600 dark:text-slate-300 text-sm sm:text-base mt-2 leading-relaxed font-medium">
-                        Tra cứu, xem trước trực tuyến và tải file tốc độ cao từ Google Drive.
+                        Tra cứu, xem trước trực tuyến, tải file tốc độ cao và truy cập tiện ích nhanh chóng.
                     </p>
                 </div>
 
                 <div class="relative z-10 flex flex-row md:flex-col items-start md:items-end justify-between gap-2.5 border-t md:border-t-0 md:border-l border-white/60 dark:border-white/10 pt-4 md:pt-0 md:pl-6 shrink-0">
                     <div class="text-left md:text-right">
-                        <p class="text-[11px] font-bold uppercase tracking-widest text-pastel-600 dark:text-pastel-400">Dữ liệu trực tiếp</p>
+                        <p class="text-[11px] font-bold uppercase tracking-widest text-pastel-600 dark:text-pastel-400">Đồng bộ Drive</p>
                         <p class="text-sm font-bold text-slate-800 dark:text-white flex items-center md:justify-end gap-1.5 mt-0.5">
-                            <i class="ph-fill ph-check-circle text-emerald-500"></i> Tự động đồng bộ
+                            <i class="ph-fill ph-check-circle text-emerald-500"></i> Tự động
                         </p>
                     </div>
                     <div class="flex items-center gap-2">
+                        
                         <button onclick="loadData(true)" class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl glass-pill hover:bg-pastel-100/60 dark:hover:bg-pastel-900/60 text-xs font-semibold text-pastel-700 dark:text-pastel-300 transition-colors shadow-sm active:scale-95">
-                            <i class="ph-bold ph-arrows-clockwise text-sm" id="refreshIcon"></i> Cập nhật
+                            <i class="ph-bold ph-arrows-clockwise text-sm" id="refreshIcon"></i> Làm mới
                         </button>
                     </div>
                 </div>
@@ -344,7 +342,6 @@
 
             <!-- Breadcrumb Navigation -->
             <div class="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-300 mb-6 glass-panel px-4 py-3 rounded-2xl shadow-glass-sm overflow-x-auto hide-scrollbar" id="breadcrumb">
-                <!-- Injected via JS -->
             </div>
 
             <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-7">
@@ -391,7 +388,6 @@
                         </button>
                     </div>
 
-                    <!-- Nút chọn phạm vi tìm kiếm nhanh: Toàn kho hoặc Thư mục này -->
                     <button id="scopeToggleBtn" onclick="toggleSearchScope()" title="Chuyển đổi phạm vi tìm kiếm (Toàn bộ kho / Thư mục này)"
                             class="h-11 px-3 rounded-2xl glass-panel flex items-center gap-1.5 text-xs font-bold text-pastel-600 dark:text-pastel-300 hover:border-pastel-400 transition-all shrink-0">
                         <i class="ph-bold ph-globe" id="scopeIcon"></i>
@@ -432,7 +428,7 @@
                     <div class="w-16 h-16 rounded-2xl glass-panel shadow-glass-md flex items-center justify-center mb-3">
                         <i class="ph-duotone ph-spinner-gap text-3xl text-pastel-500 spin"></i>
                     </div>
-                    <p class="text-sm font-bold text-slate-700 dark:text-pastel-200 tracking-wide">Đang kết nối đến Google Drive...</p>
+                    <p class="text-sm font-bold text-slate-700 dark:text-pastel-200 tracking-wide">Đang kết nối dữ liệu...</p>
                 </div>
 
                 <!-- Empty State -->
@@ -447,7 +443,7 @@
                     </button>
                 </div>
 
-                <!-- CHẾ ĐỘ 1: THE DYNAMIC TABLE VIEW (BẢNG CHI TIẾT - ƯU TIÊN MẶC ĐỊNH) -->
+                <!-- CHẾ ĐỘ 1: BẢNG CHI TIẾT (TABLE VIEW) -->
                 <div id="tableViewWrapper" class="glass-panel rounded-3xl overflow-hidden shadow-glass-md border border-white/70 dark:border-pastel-400/20">
                     <div class="overflow-x-auto">
                         <table class="w-full text-left border-collapse whitespace-nowrap">
@@ -461,15 +457,13 @@
                                 </tr>
                             </thead>
                             <tbody id="tableBody" class="text-sm divide-y divide-slate-100/70 dark:divide-slate-800/60 font-medium">
-                                <!-- Table rows injected here via JS -->
                             </tbody>
                         </table>
                     </div>
                 </div>
 
-                <!-- CHẾ ĐỘ 2: THE DYNAMIC CARDS GRID (LƯỚI Ô VUÔNG) -->
+                <!-- CHẾ ĐỘ 2: LƯỚI Ô VUÔNG (GRID VIEW) -->
                 <div id="dataGrid" class="hidden grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
-                    <!-- Cards will be injected here via JS -->
                 </div>
 
             </div>
@@ -483,21 +477,21 @@
                     </div>
                     <div>
                         <h4 class="font-bold text-sm text-slate-900 dark:text-white">Wiky TUD</h4>
-                        <p class="text-xs text-slate-500 dark:text-slate-400">Kho tài nguyên tà đạo</p>
+                        <p class="text-xs text-slate-500 dark:text-slate-400">Kho tài nguyên & tiện ích trực tuyến</p>
                     </div>
                 </div>
-               <a class="text-xs text-slate-400 dark:text-slate-500 font-medium" 
-   href="https://drive.google.com/drive/u/1/folders/12MnQhTpB5UfYsQNUZk3T1FfYJLTjEfjZ" 
-   target="_blank" rel="noopener noreferrer">
-   © 2026 • Nh4tHuy
-</a>
-
-              
+                <div class="flex items-center gap-4">
+                   
+                   <a class="text-xs text-slate-400 dark:text-slate-500 font-medium hover:text-pastel-500 transition-colors" 
+                       href="https://drive.google.com/drive/u/1/folders/12MnQhTpB5UfYsQNUZk3T1FfYJLTjEfjZ" 
+                       target="_blank" rel="noopener noreferrer">
+                       © 2026 • Nh4tHuy
+                    </a>
+                </div>
             </div>
         </footer>
     </div>
 
-    <!-- MODAL 1: CHI TIẾT FILE -->
     <div id="fileModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 hidden bg-slate-950/40 opacity-0 transition-opacity">
         <div class="glass-panel w-full max-w-md rounded-3xl overflow-hidden shadow-glass-lg relative border border-white/80 dark:border-pastel-400/20 transform scale-95 opacity-0 transition-all duration-300" id="fileModalContent">
             
@@ -546,11 +540,9 @@
         </div>
     </div>
 
-    <!-- MODAL 2: XEM TRƯỚC TÀI LIỆU TRỰC TIẾP (PREVIEW MODAL GIỐNG DATAMN) -->
     <div id="previewModal" class="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 hidden bg-slate-950/60 opacity-0 backdrop-blur-sm transition-opacity">
         <div class="glass-panel w-full max-w-5xl h-[90vh] rounded-3xl overflow-hidden shadow-glass-lg relative border border-white/80 dark:border-pastel-400/20 flex flex-col transform scale-95 opacity-0 transition-all duration-300" id="previewModalContent">
             
-            <!-- Header Modal Xem Trước -->
             <div class="p-3 sm:p-4 border-b border-white/60 dark:border-white/10 bg-white/40 dark:bg-slate-900/40 flex items-center justify-between gap-3 shrink-0">
                 <div class="flex items-center gap-3 min-w-0">
                     <div id="previewHeaderIcon" class="w-10 h-10 rounded-2xl bg-amber-100 text-amber-600 dark:bg-amber-950/60 dark:text-amber-400 flex items-center justify-center text-2xl shrink-0 shadow-sm">
@@ -563,41 +555,33 @@
                 </div>
                 
                 <div class="flex items-center gap-2 shrink-0">
-                    <!-- Nút mở trong tab mới -->
                     <a id="previewOpenExternalBtn" href="#" target="_blank" title="Mở trang xem riêng" class="h-9 px-3 rounded-xl glass-pill hover:bg-pastel-100/60 dark:hover:bg-pastel-900/60 text-slate-700 dark:text-slate-200 text-xs sm:text-sm font-semibold flex items-center gap-1.5 shadow-sm transition-colors">
                         <i class="ph-bold ph-arrow-square-out text-base text-pastel-500"></i>
                         <span class="hidden sm:inline">Mở rộng</span>
                     </a>
-                    <!-- Nút tải file -->
                     <a id="previewDownloadBtn" href="#" target="_blank" title="Tải xuống tệp tin" class="h-9 px-3.5 rounded-xl bg-pastel-500 hover:bg-pastel-600 text-white font-bold text-xs sm:text-sm flex items-center gap-1.5 shadow-sm active:scale-95 transition-colors">
                         <i class="ph-bold ph-download-simple text-base"></i>
                         <span class="hidden sm:inline">Tải về</span>
                     </a>
-                    <!-- Nút đóng -->
                     <button onclick="closeModal('previewModal')" title="Đóng cửa sổ (Esc)" class="w-9 h-9 rounded-xl glass-pill text-slate-600 dark:text-slate-300 hover:text-rose-500 flex items-center justify-center text-lg active:scale-95 transition-colors">
                         <i class="ph-bold ph-x"></i>
                     </button>
                 </div>
             </div>
 
-            <!-- Nội dung Viewer -->
             <div class="flex-1 bg-slate-50/50 dark:bg-slate-950/60 relative overflow-hidden flex items-center justify-center">
-                <!-- Loader khi iframe hoặc ảnh đang tải -->
                 <div id="previewLoader" class="absolute inset-0 bg-white/70 dark:bg-slate-950/80 flex flex-col items-center justify-center z-10">
                     <i class="ph-duotone ph-spinner-gap text-4xl text-pastel-500 spin mb-2"></i>
                     <p class="text-xs sm:text-sm font-bold text-slate-700 dark:text-pastel-200">Đang khởi tạo trình xem trước...</p>
                     <p class="text-[11px] text-slate-400 mt-1">Nếu tệp tin quá lớn hoặc bảo mật, hãy chọn Tải về.</p>
                 </div>
 
-                <!-- Iframe cho PDF, DOCX, XLSX, PPTX -->
                 <iframe id="previewIframe" src="" class="w-full h-full border-0 hidden" allow="autoplay"></iframe>
 
-                <!-- Thẻ hình ảnh nếu file là ảnh -->
                 <div id="previewImageWrapper" class="w-full h-full overflow-auto p-4 hidden flex items-center justify-center">
                     <img id="previewImage" src="" alt="Xem trước hình ảnh" class="max-w-full max-h-full object-contain rounded-2xl shadow-lg">
                 </div>
 
-                <!-- Fallback nếu không hỗ trợ xem trực tiếp -->
                 <div id="previewFallback" class="hidden flex-col items-center justify-center text-center p-6">
                     <div class="w-16 h-16 rounded-2xl bg-amber-100/80 dark:bg-amber-950/60 text-amber-500 flex items-center justify-center text-3xl mb-3 shadow-sm">
                         <i class="ph-bold ph-file-dashed"></i>
@@ -612,19 +596,17 @@
         </div>
     </div>
 
-    <!-- MODAL 3: POPUP THÔNG BÁO ADMIN & THÔNG TIN TRUY CẬP (FIRST VISIT POPUP) -->
     <div id="welcomeModal" class="fixed inset-0 z-[60] flex items-center justify-center p-4 hidden bg-slate-950/45 opacity-0 transition-opacity">
         <div class="glass-panel w-full max-w-lg rounded-3xl overflow-hidden shadow-glass-lg relative border border-white/80 dark:border-pastel-400/20 transform scale-95 opacity-0 transition-all duration-300" id="welcomeModalContent">
             
-            <!-- Header bar with icon -->
-            <div class="p-6 bg-gradient-to-r from-pastel-500 to-pastel-600 text-white relative">
+            <div class="p-6 bg-gradient-to-r from-pastel-500 to-indigo-600 text-white relative">
                 <div class="flex items-center gap-3">
                     <div class="w-12 h-12 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center text-2xl border border-white/30">
                         <i class="ph-bold ph-megaphone-simple"></i>
                     </div>
                     <div>
                         <span class="bg-white/25 text-[10px] font-extrabold uppercase px-2.5 py-0.5 rounded-full tracking-wider border border-white/20">Wiky TUD</span>
-                        <h3 class="text-lg font-bold leading-tight mt-1">Thông Báo</h3>
+                        <h3 class="text-lg font-bold leading-tight mt-1">Thông Báo - Update: 01/10/2026</h3>
                     </div>
                 </div>
                 <button onclick="closeModal('welcomeModal')" class="absolute top-4 right-4 w-8 h-8 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center text-white transition-colors">
@@ -632,60 +614,81 @@
                 </button>
             </div>
 
-            <!-- Body Message -->
             <div class="p-6 sm:p-7 space-y-4 max-h-[72vh] overflow-y-auto">
-                <div class="p-4 rounded-2xl bg-pastel-0 dark:bg-pastel-950/50 border border-pastel-200/80 dark:border-pastel-800/60">
+                <div class="p-4 rounded-2xl bg-pastel-50 dark:bg-pastel-950/50 border border-pastel-200/80 dark:border-pastel-800/60">
                     <p class="text-sm text-slate-700 dark:text-slate-200 leading-relaxed font-medium">
-        Hệ thống vừa được nâng cấp <b>2 chế độ hiển thị</b> và <b>Xem trước tài liệu</b>. <a class="text-red-400 dark:text-red-500" 
-   href="https://bom.so/tknc" 
-   target="_blank" rel="noopener noreferrer">
-   <b>Link code TKNC</b>
-        </a>
+                        Hệ thống đã nâng cấp tích hợp <b>Tìm kiếm thông minh</b>, <b>Chế độ xem trước</b> và <b>Thanh tiện ích</b>. Bạn có thể tìm nhanh File qua thanh tìm kiếm, xem trước nội dung File trước khi tải và truy cập nhanh website tiện ích.
                     </p>
                 </div>
 
-                <!-- Thống kê thông tin phiên truy cập của bạn -->
-                <div>
-                    <h4 class="text-xs font-extrabold text-slate-400 dark:text-slate-400 uppercase tracking-wider mb-2.5 flex items-center gap-1.5">
-                        <i class="ph-bold ph-shield-check text-pastel-500"></i> Phiên truy cập
-                    </h4>
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-xs">
-                        <div class="p-3 rounded-xl glass-pill flex flex-col justify-between">
-                            <span class="text-slate-400 font-semibold mb-0.5">Địa chỉ IP</span>
-                            <span id="visitorIp" class="font-mono font-bold text-slate-800 dark:text-slate-100 flex items-center gap-1">
-                                <i class="ph-duotone ph-spinner-gap spin text-pastel-500"></i> Đang nhận diện...
-                            </span>
-                        </div>
-                        <div class="p-3 rounded-xl glass-pill flex flex-col justify-between">
-                            <span class="text-slate-400 font-semibold mb-0.5">Thời gian truy cập</span>
-                            <span id="visitorTime" class="font-bold text-slate-800 dark:text-slate-100">--:--:--</span>
-                        </div>
-                        <div class="p-3 rounded-xl glass-pill flex flex-col justify-between">
-                            <span class="text-slate-400 font-semibold mb-0.5">Trình duyệt & Phiên bản</span>
-                            <span id="visitorBrowser" class="font-bold text-slate-800 dark:text-slate-100 truncate">Đang phân tích...</span>
-                        </div>
-                        <div class="p-3 rounded-xl glass-pill flex flex-col justify-between">
-                            <span class="text-slate-400 font-semibold mb-0.5">Hệ điều hành / Thiết bị</span>
-                            <span id="visitorOS" class="font-bold text-slate-800 dark:text-slate-100 truncate">Đang phân tích...</span>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="pt-2">
-                    <button onclick="acknowledgeWelcome()" class="w-full py-3.5 px-4 rounded-2xl font-bold bg-pastel-500 hover:bg-pastel-600 text-white flex items-center justify-center gap-2 transition-all shadow-md shadow-pastel-500/25 text-sm hover:scale-[1.01] active:scale-[0.98]">
-                        <i class="ph-bold ph-check"></i> Né hộ
+                <div class="pt-2 flex gap-3">
+                    <button onclick="closeModal('welcomeModal'); openToolsModal();" class="flex-1 py-3 px-4 rounded-2xl font-bold bg-pastel-500 hover:bg-pastel-600 text-white flex items-center justify-center gap-2 transition-all shadow-md shadow-pastel-500/25 text-sm hover:scale-[1.01] active:scale-[0.98]">
+                        <i class="ph-bold ph-lightning"></i> Xem Tiện Ích
+                    </button>
+                    <button onclick="acknowledgeWelcome()" class="px-5 py-3 rounded-2xl font-bold glass-pill text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 text-sm transition-all">
+                        Đã hiểu
                     </button>
                 </div>
             </div>
         </div>
     </div>
 
+    <!-- MODAL TIỆN ÍCH NHANH (THAY THẾ HOÀN TOÀN TÍNH NĂNG PHIÊN TRUY CẬP) -->
+    <div id="toolsModal" class="fixed inset-0 z-[60] flex items-center justify-center p-4 hidden bg-slate-950/50 opacity-0 backdrop-blur-sm transition-opacity">
+        <div class="glass-panel w-full max-w-xl rounded-3xl overflow-hidden shadow-glass-lg relative border border-white/80 dark:border-pastel-400/20 transform scale-95 opacity-0 transition-all duration-300 flex flex-col max-h-[85vh]" id="toolsModalContent">
+            
+            <!-- Header Modal Tiện ích -->
+            <div class="p-5 sm:p-6 bg-gradient-to-r from-pastel-500 via-blue-600 to-indigo-600 text-white relative shrink-0">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                        <div class="w-12 h-12 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center text-2xl border border-white/30 text-amber-300 shadow-sm">
+                            <i class="ph-bold ph-lightning"></i>
+                        </div>
+                        <div>
+                            <div class="flex items-center gap-2">
+                                <h3 class="text-lg font-bold leading-tight">Tiện Ích Nhanh</h3>
+                                <span id="toolsCountBadge" class="bg-white/20 text-white text-[11px] font-extrabold px-2 py-0.5 rounded-full">0 tiện ích</span>
+                            </div>
+                            <p class="text-xs text-white/80 mt-0.5">Truy cập nhanh web tiện ích bằng 1 cú click.</p>
+                        </div>
+                    </div>
+                    <button onclick="closeModal('toolsModal')" class="w-9 h-9 rounded-2xl bg-white/20 hover:bg-white/30 flex items-center justify-center text-white transition-colors active:scale-95">
+                        <i class="ph-bold ph-x text-lg"></i>
+                    </button>
+                </div>
+
+                <!-- Ô tìm kiếm tiện ích nhanh -->
+                <div class="mt-4 relative">
+                    <i class="ph ph-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-white/70 text-base"></i>
+                    <input type="text" id="toolSearchInput" placeholder="Tìm tên tiện ích..." 
+                           class="w-full pl-10 pr-4 py-2.5 rounded-2xl bg-white/15 focus:bg-white/25 border border-white/30 text-white placeholder:text-white/60 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-white/40 transition-all">
+                </div>
+            </div>
+
+            <!-- Danh sách các tiện ích -->
+            <div class="p-4 sm:p-6 flex-1 overflow-y-auto space-y-3" id="toolsListContainer">
+                <!-- Injected via JavaScript -->
+            </div>
+
+            <!-- Footer Modal -->
+            <div class="p-4 bg-slate-50/70 dark:bg-slate-900/60 border-t border-white/40 dark:border-white/10 flex items-center justify-between text-xs text-slate-500 dark:text-slate-400 shrink-0">
+                <span class="flex items-center gap-1.5 font-medium">
+                    <i class="ph-fill ph-check-circle text-emerald-500"></i> Nhấp "Truy cập" để mở link
+                </span>
+                <button onclick="loadData(true)" class="font-bold text-pastel-600 dark:text-pastel-400 hover:underline flex items-center gap-1">
+                    <i class="ph-bold ph-arrows-clockwise"></i> Làm mới
+                </button>
+            </div>
+        </div>
+    </div>
+
     <script>
-        const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzYaZ5YfUw5l1R3A1r5SXhY8_2arNavjO5qCH4cM8jUA2yOoL8n4YRJ0AN3qYHEl2M09A/exec';
-        const CACHE_STORAGE_KEY = 'wiky_ctu_drive_cache_v4';
-        const CACHE_TTL_MS = 8 * 60 * 1000; // 8 phút cache
+        const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwOAIP0V75XbaMPapRffE3Ow9NYxAq41cDuW4IKFo5PqXh7Tidf1ervncrCWKM29kT2hQ/exec';
+        const CACHE_STORAGE_KEY = 'wiky_ctu_drive_cache_v5';
+        const CACHE_TTL_MS = 6 * 60 * 1000; // 6 phút cache
 
         let globalData = [];
+        let globalTools = [];
         let byIdMap = new Map();
         let folderMap = new Map();
         let parentIndexMap = new Map();
@@ -693,12 +696,12 @@
 
         let currentFolderId = 'root'; 
         let currentSearchQuery = '';
-        let currentSearchScope = 'global'; // 'global' (Toàn kho) hoặc 'current' (Thư mục này)
+        let currentSearchScope = 'global';
         let currentFilterType = 'all';
-        let currentViewMode = localStorage.getItem('tud_view_mode') || 'table'; // Mặc định ưu tiên chế độ Bảng ('table')
+        let currentViewMode = localStorage.getItem('tud_view_mode') || 'table';
         let currentActiveFile = null;
 
-        // Dark mode toggle listener
+        // Dark mode listener
         document.getElementById('themeToggle').addEventListener('click', () => {
             document.documentElement.classList.toggle('dark');
             localStorage.theme = document.documentElement.classList.contains('dark') ? 'dark' : 'light';
@@ -716,21 +719,25 @@
             setTimeout(() => { if (container.contains(toast)) container.removeChild(toast); }, 2600);
         }
 
-        // Chuyển đổi tiếng Việt không dấu siêu tốc để tìm kiếm chính xác
         const VI_NORM_REGEX = /[\u0300-\u036f]/g;
         function removeVietnameseTones(str) {
             if (!str) return '';
             return str.normalize('NFD').replace(VI_NORM_REGEX, '').replace(/[đĐ]/g, m => m === 'đ' ? 'd' : 'D');
         }
 
-        function processAndIndexData(rawItems) {
+        function processAndIndexData(rawItems, rawTools = []) {
             globalData = rawItems || [];
+            globalTools = rawTools || [];
+            
+            // Cập nhật số lượng tiện ích trên Navbar
+            const navBadge = document.getElementById('navToolsBadge');
+            if (navBadge) navBadge.textContent = globalTools.length;
+
             byIdMap.clear();
             folderMap.clear();
             parentIndexMap.clear();
             allValidFolderIds.clear();
 
-            // Lượt 1: Đánh dấu các ID thư mục hợp lệ
             for (let i = 0; i < globalData.length; i++) {
                 const item = globalData[i];
                 if (!item) continue;
@@ -746,7 +753,6 @@
                 }
             }
 
-            // Lượt 2: Chuẩn hóa quan hệ cha - con và tổ chức index theo thư mục
             for (let i = 0; i < globalData.length; i++) {
                 const item = globalData[i];
                 if (!item) continue;
@@ -764,6 +770,8 @@
                 }
                 list.push(item);
             }
+
+            renderToolsList();
         }
 
         function getParentFolderName(parentId) {
@@ -781,7 +789,7 @@
                     if (cachedRaw) {
                         const parsedCache = JSON.parse(cachedRaw);
                         if (parsedCache.timestamp && (Date.now() - parsedCache.timestamp < CACHE_TTL_MS)) {
-                            processAndIndexData(parsedCache.data);
+                            processAndIndexData(parsedCache.data, parsedCache.tools);
                             renderView();
                             showLoading(false);
                             if (refreshIcon) refreshIcon.classList.remove('spin');
@@ -809,18 +817,20 @@
                 
                 const rawData = await response.json();
                 const items = rawData.data ? rawData.data : (Array.isArray(rawData) ? rawData : []);
+                const tools = rawData.tools ? rawData.tools : [];
                 
-                processAndIndexData(items);
+                processAndIndexData(items, tools);
 
                 try {
                     sessionStorage.setItem(CACHE_STORAGE_KEY, JSON.stringify({
                         timestamp: Date.now(),
-                        data: items
+                        data: items,
+                        tools: tools
                     }));
                 } catch (e) { }
 
                 renderView();
-                if (forceRefresh) showToast("Đã đồng bộ dữ liệu mới nhất!");
+                if (forceRefresh) showToast("Đã đồng bộ Sheet Data & Sheet Tool!");
             } catch (error) {
                 console.error(error);
                 if (globalData.length === 0) {
@@ -844,11 +854,13 @@
                 if (!res.ok) return;
                 const raw = await res.json();
                 const freshItems = raw.data ? raw.data : (Array.isArray(raw) ? raw : []);
-                if (freshItems.length > 0) {
-                    processAndIndexData(freshItems);
+                const freshTools = raw.tools ? raw.tools : [];
+                if (freshItems.length > 0 || freshTools.length > 0) {
+                    processAndIndexData(freshItems, freshTools);
                     sessionStorage.setItem(CACHE_STORAGE_KEY, JSON.stringify({
                         timestamp: Date.now(),
-                        data: freshItems
+                        data: freshItems,
+                        tools: freshTools
                     }));
                 }
             } catch (e) { }
@@ -859,6 +871,74 @@
             if (!overlay) return;
             if (show) overlay.classList.remove('hidden');
             else overlay.classList.add('hidden');
+        }
+
+        function renderToolsList(searchKeyword = '') {
+            const container = document.getElementById('toolsListContainer');
+            const countBadge = document.getElementById('toolsCountBadge');
+            if (!container) return;
+
+            const kwNorm = removeVietnameseTones(searchKeyword).toLowerCase().trim();
+            const filteredTools = globalTools.filter(t => {
+                if (!kwNorm) return true;
+                const nameNorm = removeVietnameseTones(t.name).toLowerCase();
+                const descNorm = removeVietnameseTones(t.description || '').toLowerCase();
+                return nameNorm.includes(kwNorm) || descNorm.includes(kwNorm);
+            });
+
+            if (countBadge) {
+                countBadge.textContent = `${filteredTools.length} tiện ích`;
+            }
+
+            if (filteredTools.length === 0) {
+                container.innerHTML = `
+                    <div class="py-12 text-center">
+                        <div class="w-14 h-14 rounded-2xl glass-pill text-pastel-500 flex items-center justify-center text-2xl mx-auto mb-2">
+                            <i class="ph-bold ph-toolbox"></i>
+                        </div>
+                        <p class="font-bold text-sm text-slate-700 dark:text-slate-200">Không tìm thấy tiện ích nào</p>
+                        <p class="text-xs text-slate-400 mt-1">Hãy thêm tên tiện ích và liên kết vào Sheet 'Tool'.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            let html = '';
+            filteredTools.forEach((tool, index) => {
+                const displayName = searchKeyword ? highlightMatch(tool.name, searchKeyword) : escapeHtml(tool.name);
+                const displayDesc = tool.description ? escapeHtml(tool.description) : 'Nhấp để truy cập nhanh';
+
+                html += `
+                    <div class="glass-card p-3.5 sm:p-4 rounded-2xl flex items-center justify-between gap-3 shadow-glass-sm hover:border-pastel-400 group transition-all">
+                        <div class="flex items-center gap-3 min-w-0">
+                            <div class="w-10 h-10 rounded-xl bg-pastel-100 dark:bg-pastel-950/60 text-pastel-600 dark:text-pastel-300 flex items-center justify-center text-xl shrink-0 group-hover:bg-pastel-500 group-hover:text-white transition-all shadow-sm">
+                                <i class="ph-bold ph-wrench"></i>
+                            </div>
+                            <div class="min-w-0">
+                                <h4 class="font-bold text-sm text-slate-900 dark:text-white truncate group-hover:text-pastel-600 dark:group-hover:text-pastel-300 transition-colors">
+                                    ${displayName}
+                                </h4>
+                                <p class="text-[11px] text-slate-500 dark:text-slate-400 truncate mt-0.5">
+                                    ${displayDesc}
+                                </p>
+                            </div>
+                        </div>
+
+                        <a href="${escapeHtml(tool.link)}" target="_blank" rel="noopener noreferrer" 
+                           class="shrink-0 px-3.5 py-2 rounded-xl bg-pastel-500 hover:bg-pastel-600 text-white font-bold text-xs flex items-center gap-1.5 shadow-sm active:scale-95 transition-all">
+                            <span>Truy cập</span>
+                            <i class="ph-bold ph-arrow-square-out text-sm"></i>
+                        </a>
+                    </div>
+                `;
+            });
+
+            container.innerHTML = html;
+        }
+
+        function openToolsModal() {
+            renderToolsList();
+            openModal('toolsModal');
         }
 
         function getCardIconStyles(type) {
@@ -1097,7 +1177,6 @@
             
             const sortVal = document.getElementById('sortSelect').value;
             data.sort((a, b) => {
-                // Luôn xếp Thư mục lên trước
                 if (a._type === 'folder' && b._type !== 'folder') return -1;
                 if (a._type !== 'folder' && b._type === 'folder') return 1;
                 if (sortVal === 'name_asc') return (a.name || '').localeCompare(b.name || '', 'vi', { numeric: true });
@@ -1140,16 +1219,13 @@
             
             emptyState.classList.replace('flex', 'hidden');
 
-            const isGridView = currentViewMode === 'grid';
             let tableRowsHtml = '';
             const gridFragment = document.createDocumentFragment();
 
-            // Thẻ / Dòng Quay lại thư mục cha
             if (isInsideFolder) {
                 const parentFolder = byIdMap.get(currentFolderId);
                 const parentId = (parentFolder && parentFolder._normParent) ? parentFolder._normParent : 'root';
 
-                // Grid back card
                 const backCard = document.createElement('div');
                 backCard.className = "glass-card card-animate rounded-3xl p-5 cursor-pointer flex flex-col items-center justify-center min-h-[220px] group shadow-glass-sm hover:border-pastel-400";
                 backCard.onclick = () => navigateTo(parentId);
@@ -1162,7 +1238,6 @@
                 `;
                 gridFragment.appendChild(backCard);
 
-                // Table back row
                 tableRowsHtml += `
                     <tr class="glass-table-row cursor-pointer" onclick="navigateTo('${parentId}')">
                         <td class="py-3 px-4 text-center text-pastel-500 font-bold"><i class="ph-bold ph-arrow-bend-up-left text-lg"></i></td>
@@ -1186,14 +1261,13 @@
                 const parentName = getParentFolderName(item._normParent);
                 const displayName = currentSearchQuery ? highlightMatch(item.name, currentSearchQuery) : escapeHtml(item.name);
 
-                // Nhãn vị trí nếu đang tìm kiếm toàn kho
                 const locationLabel = (currentSearchQuery && currentSearchScope === 'global') ? `
                     <button onclick="event.stopPropagation(); navigateTo('${item._normParent}')" class="text-[11px] text-pastel-600 dark:text-pastel-400 hover:underline flex items-center gap-1 mt-1 font-semibold" title="Đi tới thư mục chứa">
                         <i class="ph-bold ph-folder text-amber-500"></i> ${escapeHtml(parentName)}
                     </button>
                 ` : '';
 
-                // 1. GRID CARD
+                // 1. Grid Card Item
                 const card = document.createElement('div');
                 card.className = "glass-card card-animate rounded-3xl p-5 shadow-glass-sm flex flex-col group relative overflow-hidden";
                 card.style.animationDelay = `${Math.min(index * 20, 240)}ms`;
@@ -1238,7 +1312,7 @@
                 `;
                 gridFragment.appendChild(card);
 
-                // 2. TABLE ROW
+                // 2. Table Row Item
                 tableRowsHtml += `
                     <tr class="glass-table-row transition-colors">
                         <td class="py-3 px-4 text-center text-slate-400 font-semibold text-xs">${index + 1}</td>
@@ -1335,6 +1409,14 @@
                     clearSearch();
                 }
             });
+
+            // Tiện ích search
+            const toolSearch = document.getElementById('toolSearchInput');
+            if (toolSearch) {
+                toolSearch.addEventListener('input', (e) => {
+                    renderToolsList(e.target.value);
+                });
+            }
             
             const filterTabs = document.querySelectorAll('.filter-tab');
             filterTabs.forEach(tab => {
@@ -1434,7 +1516,6 @@
             fallbackDlBtn.href = downloadUrl;
             extBtn.href = previewUrl;
 
-            // Reset trạng thái trước khi hiển thị
             loader.classList.remove('hidden');
             iframe.classList.add('hidden');
             imgWrap.classList.add('hidden');
@@ -1510,64 +1591,23 @@
         }
 
         function checkFirstVisit() {
-            const hasSeen = localStorage.getItem('hasSeenAdminNotice_v4');
-            detectVisitorInfo();
+            const hasSeen = localStorage.getItem('hasSeenAdminNotice_v5');
             if (!hasSeen) {
                 setTimeout(() => openWelcomeModal(false), 500);
             }
         }
 
         function openWelcomeModal(isManual = false) {
-            detectVisitorInfo();
             openModal('welcomeModal');
         }
 
         function acknowledgeWelcome() {
-            localStorage.setItem('hasSeenAdminNotice_v4', 'true');
+            localStorage.setItem('hasSeenAdminNotice_v5', 'true');
             closeModal('welcomeModal');
         }
 
-        function detectVisitorInfo() {
-            const now = new Date();
-            const timeStr = now.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit', second: '2-digit' }) + ' - ' + now.toLocaleDateString('vi-VN');
-            const timeEl = document.getElementById('visitorTime');
-            if (timeEl) timeEl.textContent = timeStr;
-
-            const ipEl = document.getElementById('visitorIp');
-            fetch('https://api.ipify.org?format=json')
-                .then(res => res.json())
-                .then(data => {
-                    if (ipEl) ipEl.textContent = data.ip || 'Không xác định';
-                })
-                .catch(() => {
-                    if (ipEl) ipEl.textContent = '127.0.0.1 (Bảo mật)';
-                });
-
-            const ua = navigator.userAgent;
-            let browser = "Khác", os = "Khác";
-
-            if (ua.indexOf("Firefox") > -1) browser = "Mozilla Firefox";
-            else if (ua.indexOf("SamsungBrowser") > -1) browser = "Samsung Internet";
-            else if (ua.indexOf("Opera") > -1 || ua.indexOf("OPR") > -1) browser = "Opera";
-            else if (ua.indexOf("Edg") > -1) browser = "Microsoft Edge";
-            else if (ua.indexOf("Chrome") > -1) browser = "Google Chrome";
-            else if (ua.indexOf("Safari") > -1) browser = "Apple Safari";
-
-            if (ua.indexOf("Win") > -1) os = "Windows PC";
-            else if (ua.indexOf("Mac") > -1) os = "macOS / iOS";
-            else if (ua.indexOf("Android") > -1) os = "Android Device";
-            else if (ua.indexOf("Linux") > -1) os = "Linux";
-
-            const screenRes = `${window.screen.width}x${window.screen.height}`;
-            const browserEl = document.getElementById('visitorBrowser');
-            const osEl = document.getElementById('visitorOS');
-
-            if (browserEl) browserEl.textContent = browser;
-            if (osEl) osEl.textContent = `${os} (${screenRes})`;
-        }
-
         window.onclick = function(e) {
-            ['fileModal', 'welcomeModal', 'previewModal'].forEach(id => {
+            ['fileModal', 'welcomeModal', 'previewModal', 'toolsModal'].forEach(id => {
                 if (e.target === document.getElementById(id)) {
                     closeModal(id);
                 }
@@ -1576,7 +1616,7 @@
 
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape') {
-                ['fileModal', 'welcomeModal', 'previewModal'].forEach(id => closeModal(id));
+                ['fileModal', 'welcomeModal', 'previewModal', 'toolsModal'].forEach(id => closeModal(id));
             }
         });
 
